@@ -1,0 +1,65 @@
+Important math
+	Groups, rings
+	XOR
+	Finite fields
+	Finite field ~ real numbers in terms of operations
+
+	Cyclic group (prime modulus)
+	Fermat's Little Theorem and implications
+
+	P vs NP vs NP-Complete vs NP-Hard
+
+	Probability?
+
+Hashing
+	Attacks
+	TMTO
+Public-key
+	Diffie-Hellman
+	ElGamal
+	RSA
+	Elliptic curve (honestly, this should be in-class)
+Symmetric
+	DES
+	AES
+SSL
+	What happens if it gets broken?
+
+Attacks (implementation)
+	Single-byte XOR
+	Caesar cipher
+	Viginere
+	Attack types (KPA, CPA, CCA, COA)
+	CRIME
+	BREACH
+	ECB
+	CBC (e.g. padding oracle)
+		BEAST
+	RSA
+		Coppersmith
+		Bleichenbacher
+
+Attacks (cryptography)
+	TMTO
+	Baby Step / Giant Step
+
+Format:
+	The students should do a research topic / 15 min presentation of their own
+		Bitcoin
+		DeCSS
+		Differential Cryptanalysis
+		ENIGMA
+		Homomorphic
+		Malleable
+		Oblivious Transfer Protocol
+		POODLE
+		Perfect Forward Security
+		Quantum Cryptography
+		Random Number Generators
+		Secret Sharing
+		Secure Multiparty Computation
+		TOR: The Onion Router
+		Timing Attacks
+		Trusted computing
+		WEP/WPA/Wifi
+	Many proofs should be done by the students, walked through in homeworks
