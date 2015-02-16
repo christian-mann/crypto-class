@@ -1,0 +1,11 @@
+Ancient/Manual Crypto
+	- Caesar Cipher
+	- Viginere
+	- Playfair
+	- One-time pad
+	- XOR cipher
+
+Private-Key / Symmetric
+	- DES
+		- Feistel network
+	- AES

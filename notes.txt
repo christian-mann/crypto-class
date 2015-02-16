@@ -58,8 +58,14 @@ Format:
 		Random Number Generators
 		Secret Sharing
 		Secure Multiparty Computation
+			http://www.scientificamerican.com/article/cryptographers-could-prevent-satellite-collisions/#_10978
 		TOR: The Onion Router
 		Timing Attacks
 		Trusted computing
 		WEP/WPA/Wifi
 	Many proofs should be done by the students, walked through in homeworks
+
+Why is a cryptosystem bad?
+	- Repeated messages (esp. with same key)
+	- Pro Forma messages
+	- Not supporting all message types, leading to the above
