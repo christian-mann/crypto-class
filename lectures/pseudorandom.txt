@@ -1,0 +1,166 @@
+Function {0,1}^l -> {0,1}^l is a permutation if there is an inverse. i.e.
+	identity function is a permutation
+	bit-flip is a permutation
+	swap is a permutation
+	AES_K is a permutation
+
+Note: It's not that we're permuting the bits in the input; the name comes from
+the fact that we permute the elements in the input /set/.
+
+Block cipher: Family of permutations on chunk, indexed by key
+	E_K: {0,1}^l -> {0,1}^l is a permutation
+	E_K, E_K^-1 are efficient
+
+	Also expressible as E: {0,1}^k x {0,1}^l -> {0,1}^l
+
+Example of a block cipher is XOR, if k == l
+
+To use a block cipher:
+	K randomly chosen from {0,1}^k, the keyspace
+	K distributed to trusted parties (only)
+	A, B use E_K and E_K^-1
+
+	E is public
+
+	Security requirements: Hard to derive K from output
+	Hard to derive input from output
+
+Random function: Returns random deterministic output for a given input
+
+	Pseudorandom function: Looks convincingly similar to a random function.
+	
+	Imagine this as a class as follows:
+		class RandomFunction:
+			def __init__(self, R):
+				self.cache = {}
+
+			def Fn(self, x):
+				if x not in self.cache:
+					self.cache[x] = random.choice(R)
+				return self.cache[x]
+	
+	We usually write it like this, to save space:
+		procedure Fn(x)
+			if T[x] = | then T[x] <-$- R
+			return T[x]
+	
+	Adversary: Is given an instantiation of this class
+	allowed to call Fn
+	eventually halts with a boolean output ("is this a random function?")
+
+	This is important: Pr{ A(Rand_R) == true }
+
+
+	As a concrete example on a 3-bit space:
+
+	class Rand_{0,1}^3
+	procedure Fn(x)
+		if T[x] = | then T[x] <-$- {0,1}^3
+		return T[x]
+	
+	Adversary A
+	y = Fn(01)
+	return y == 000
+
+	... bunch of examples of PRFs and adversaries ...
+
+	
+Function Families
+	
+	A family of functions FF: Keys(F) x Dom(F) -> Range(F)
+
+	For each K, let F_K = (\x: FF(K,x))
+
+	Example: F(k, x) = 0000
+	Example: F(k, x) = k
+	Example: Any block cipher, such as DES
+
+	F is a PRF if F_K acts indistinguishably from a random function.
+
+So, back to our adversary model.
+	
+	class Family_F:
+		procedure init: K <-$- Keys(F)
+		procedure fn(x): return F_K(x)
+	
+	class Rand_Range(F):
+		procedure fn(x): if T[x] == | then T[x] <-$- Range(F); return T[x]
+	
+	We can create an adversary A for both of these. Remember we care about these
+	probabilities:
+
+	Pr{ A(Family_F) == 1 },       Pr{ A(Rand_Range(F)) == 1 }
+
+	We define the *advantage* of A to be
+
+	Adv^{prf}_F(A) = Pr{ A(Family_F) == 1 } - Pr{ A(Rand_F) == 1 }
+
+
+Advantage:
+
+	A outputs:
+		1 -> I think this is a family
+		0 -> I think this is a random function
+	
+	Advantage ~ 1 means F is not prf-secure
+	Advantage ~ 0 means F is prf-secure
+
+So how to get advantage?
+	
+	Strategy -- algorithm
+	Resources -- how many queries into the function are you making?
+
+	Security: F is a (secure) PRF if Adv^{prf}_F(A) is small for ALL adversaries
+	that use a practical amount of resources
+
+	Example: We define 64-bit security to mean that:
+		for all A
+			for all n
+				if A queries the oracle less than 2^{64 - n} times, then
+					Adv(A) <= 2^{-n}
+	
+		In other words, number / Adv > 2^64
+						number > 2^64 * Adv
+						Adv < number / 2^64
+
+		So to get an advantage of 1, it must take 2^64 queries, or 64 bits.
+	
+	Corollary: F is not secure (and not a PRF) if there exists an A that
+	achieves high advantage with few resources.
+
+
+
+Example: XOR
+
+Example: 
+	... birthday paradox ...
+
+	Okay, so are block ciphers PRFs? If so, how secure are they?
+
+	So, block cipher:
+
+	class BlockCipher(F):
+		procedure init: K <-$- Keys(F)
+		procedure Fn(x): return F_K(x)
+	
+	Well, remember that block ciphers must be /invertible/, meaning every input
+	must be uniquely mapped to an output; therefore outputs cannot repeat.
+
+	Adversary:
+		let x_1, x_2, ... x_q \in {0,1}^l be distinct
+		let y_1 = Fn(x_1), y_2 = Fn(x_2), ...
+		If y_1, ..., y_q are distinct:
+			return 1
+		Else
+			return 0
+	
+	If this is a block cipher on 2^64 outputs, we can compute the advantage as follows.
+
+	Pr{ A(Cipher) == 1 } = 1
+
+	Pr{ A(Rand) == 1} = Pr{ randomly chosen y_1, ..., y_q are distinct} \approx
+	((2^l - 1) / 2^l) ^ C(q, 2)
+
+	Setting q to 2^{l/2} gets us an advantage of \approx 1
+
+	So: if E is a block cipher, there is an attack on it that succeeds in 2^{l/2} queries
