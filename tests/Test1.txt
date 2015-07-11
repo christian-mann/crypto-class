@@ -1,0 +1,70 @@
+Describe the difference between a stream cipher and a block cipher. Name a few
+examples of each.
+
+What is public-key vs private-key? When would you use each?
+
+Define:
+	Nonce
+	Cipher
+	Key (cryptovariable)
+	Cryptosystem
+
+Crack:
+	Vigenere Cipher
+
+Demonstrate:
+	RSA
+	Diffie-Hellman
+
+What is a Feistel network? How can it be used to simplify the process of
+creating a cipher?
+
+What is wrong with the below cipher? How can it be exploited? How difficult
+would it be to crack?
+
+What is the purpose of a nonce? Describe its use in a cryptosystem.
+
+For each of the following modes describe the result of changing one bit in block
+c_1 on the current decrypted block and subsequent blocks.
+	ECB
+	CBC
+	PCBC
+	CFB
+	OFB
+	CTR
+
+Given are two protocols in which the sender performs the following operation:
+For each of these, describe what steps the receiver performs upon receipt of a
+message.
+State which of 1) Confidentiality, 2) Integrity, 3) Non-repudiation are offered.
+
+Given the below systems, give an adversary that achieves a high PRF-advantage,
+if possible.
+Calculate the advantage achieved.
+	Shift:
+		Domain: {0,1}^32
+		Range: {0,1}^32
+		procedure Initialize
+			K <-$- {0, 1, 2, ... 31}
+		
+		procedure Fn(x)
+			for i in range(32):
+				y[i] = x[(i + K) mod 32]
+	
+	XOR:
+		Domain: {0,1}^32
+		Range: {0,1}^32
+		procedure Initialize
+			K <-$- {0,1}^32
+
+		procedure Fn(x)
+			return x xor K
+	
+	Append:
+		Domain: {0,1}^32
+		Range: {0,1}^96
+		procedure Initialize
+			K <-$- {0,1}^64
+
+		procedure Fn(x)
+			return concat(x, K)
