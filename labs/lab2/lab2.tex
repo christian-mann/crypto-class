@@ -1,0 +1,217 @@
+\newif\ifinstructornotes
+\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 2 Assignment:\\Block Ciphers and Chosen-Plaintext
+Attacks}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+This lab will involve various attacks on block ciphers. While the cipher used
+will be AES, this should not affect your decryption code in any way. Successful
+attacks rarely target the core cipher; rather, you will be attacking the
+\textit{mode} of encryption used. Particularly, for this project you will be
+mounting attacks on the ECB mode of encryption.
+
+Each of these challenges will involve a service on the network, giving out
+ciphertexts and returning responses. Your code will need to interact with this
+service. In every case, the end goal will be the retrieval of a flag. This will
+be accomplished in different ways, depending on the challenge.
+
+Learning to program using sockets is not the goal of this class; you can take Network
+Security or CNO for that. Thus, I will provide example socket code for any
+languages I know are being used. If you have a language that does not support
+network activity, I will be excited to work with you to arrive at a solution.
+
+\section{Assignment}
+
+\subsection{Part 1: ECB Detection}
+
+You will write a function to detect which mode an encryption oracle is
+using.
+
+The oracle for this project will prompt for input. When it receives a chunk of
+input, it will pad that input on the left and right by 5-10 randomly-chosen
+bytes. It will then encrypt the result with a randomly chosen key and IV. The
+oracle will use ECB one half of the time and CBC the other half of the time.
+This result will be sent back across the network.
+
+At this point, your code should send back ``\texttt{ECB}'' or ``\texttt{CBC}'',
+based on your guess.
+
+You will need to guess correctly 100 times in a row, and then the server will
+send the flag. On the second incorrect response, the connection will terminate.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 11 of the Matasano crypto
+challenges.
+\fi
+
+\subsection{Part 2: ECB Forgery}
+
+Encrypting a ciphertext under a secret key does not provide any level of
+integrity verification on its own. You will attack the ciphertext integrity of a
+system that uses ECB.
+
+The cryptosystem is a web service\footnote{kludgy raw TCP service also available
+if parsing HTTP is too complex}, that uses HTTP cookies. Cookie data is kept on
+the client, and kept encrypted. You should modify this encrypted data to change
+your role from \texttt{user} to \texttt{admin}.
+
+%The system uses a single AES key, and encrypts in ECB mode. Hint for the
+%challenge -- \textit{copy-and-paste}.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 13 of the Matasano crypto
+challenges.
+\fi
+
+\subsection{Part 3: ECB Decryption}
+
+You will use your knowledge of ECB to attack a cryptosystem by decrypting secret
+plaintext. This process roughly models various attacks on protocols such as HTTP
+and SSH.
+
+The oracle for this project will compute the following function:
+
+\begin{lstlisting}
+    AES-256-ECB(your-string || secret-data || padding, secret-key)
+\end{lstlisting}
+
+You can decrypt \texttt{secret-data} with repeated calls to the oracle. Here's
+how:
+
+\begin{enumerate}
+	\item Feed progressively longer strings to the oracle (start with ``A'',
+		then ``AA'', and so on). Discover the block size of the oracle. You
+		already know that AES has a 16-byte block, but do it anyway.
+	
+	\item Detect that the oracle is performing ECB. Again, you already know
+		this, but do it anyway.
+	
+	\item Craft an input that is exactly one byte short of a full block. Think
+		about what the oracle will put in that last byte.
+
+	\item Make a mapping of every possible last byte by feeding different
+		strings to the oracle; for instance, ``AAAAAAAA'', ``AAAAAAAB'',
+		``AAAAAAAC'', remembering the first block returned from every
+		invocation.
+	
+	\item Match the output of the one-byte-short input to one of the entries in
+		your dictionary. You have discovered the first byte of unknown-string.
+	
+	\item Repeat for the next byte.
+\end{enumerate}
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 12 of the Matasano crypto
+challenges.
+\fi
+
+\section{Rules}
+
+Please do not exploit any non-cryptographic vulnerabilities you may discover on
+any machines. You should not need to attempt\footnote{I hate telling people they
+are not allowed to hack my services. If you want to try, please go ahead. If you
+find something, just tell me, and don't use it to cheat on the lab.} to gain any
+level of access to the machine beyond a TCP connection, nor should you attempt
+to mount a Denial of Service attack on any host on the network.
+
+\section{Grading}
+Labs are due Thursday, September 10 at 11:59pm. You will need to turn in all
+recovered keys.
+
+\end{document}
