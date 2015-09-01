@@ -1,0 +1,262 @@
+\documentclass[12pt]{beamer}
+%\documentclass[handout,xcolor=pdflatex,dvipsnames,table,12pt]{beamer}
+\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage{amsmath} % for math AMS fonts
+\usepackage{graphicx} % to include figures
+\usepackage{subfigure} % to have figures in figures
+\usepackage{multimedia} % to include movies
+\usepackage{listings} % to display code
+\usepackage{colortbl} % colored tables
+\usepackage[latin1]{inputenc} % support for accented letters, etc.
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{ulem}
+
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+
+\title[Class Name]{Block Ciphers}
+\author{Chad Johnson -- chad-johnson@utulsa.edu}
+\institute{University of Tulsa\\
+Tulsa, Oklahoma 74104}
+\date{\today}
+
+\logo{\includegraphics[height=1.5cm]{pictures/SFSLogoMain}}
+
+\begin{document}
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+\newtheorem{mydef}{Definition}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+% no outline
+
+% note, you should have three sections maximum.  two is good.  subsubsections are evil.
+% new slides begin with teh \begin{frame} and end with \end{frame}
+
+\iffalse
+Generic Block Cipher description
+Block cipher modes, at least 4.
+algorithms
+weaknesses
+how to break a block cipher
+\fi
+\begin{frame}{Block Cipher}{}
+\begin{block}{The formal definition}
+``In cryptography, a block cipher is a deterministic algorithm operating on fixed-length groups of bits, called blocks, with an unvarying transformation that is specified by a symmetric key.''
+\end{block}
+
+\begin{block}{The informal definition}
+A cipher that has the same key to encrypt and decrypt.
+\begin{itemize}
+	\item There are exceptions
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Block Cipher}{Generic Description}
+\begin{block}{}
+Generically, a string of text encrypted using a block cipher will always produce the same output ciphertext.
+\begin{itemize}
+	\item This leads to multiple problems with regards to security
+	\item Block replay is a real problem
+\end{itemize}
+This can be corrected with the use of an initialization vector
+\begin{itemize}
+	\item Usually created by a random number generator
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Block Ciphers}{What you need to know}
+\begin{block}{Elements of the cipher that must be agreed upon}
+\begin{itemize}
+	\item block size
+	\item key size
+	\item algorithm
+	\begin{itemize}
+		\item Steps to the dance
+	\end{itemize}
+	\item in some cases, initialization vector
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Block Ciphers}{The modes}
+\begin{block}{Four commonly used modes}
+\begin{itemize}
+	\item Electronic Code Book (ECB)
+	\item Cipher Block Chaining (CBC)
+	\item Cipher Feedback (CFB)
+	\item Output Feedback (OFB)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Electronic Code Book}{Overview}
+\begin{block}{ECB}
+\begin{itemize}
+	\item Simplest form of encryption
+	\item Each block of data is encrypted independently
+	\item Errors do not propagate from block to block
+	\item Really easy to break
+	\item Susceptible to replay attacks
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Electronic Code Book}{Encryption}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/ecbModeEnc}
+\end{center}
+\end{frame}
+
+\begin{frame}{Electronic Code Book}{Decryption}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/ecbModeDec}
+\end{center}
+\end{frame}
+
+\begin{frame}{Electronic Code Book}{Example}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/ecbEncryptedImage}
+\end{center}
+\begin{block}{}
+An example of ECB encrypting each pixel of the image on the left to the image in the middle. 
+\begin{itemize}
+	\item The item on the right is encrypted with any of the other modes
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Cipher Block Chaining}{Overview}
+\begin{block}{CBC}
+\begin{itemize}
+	\item Improvement upon ECB which uses an IV to encrypt the first block
+	\item Each subsequent block uses the previous ciphertext in place of the IV
+	\begin{itemize}
+		\item This means encryption cannot be parallelized
+	\end{itemize}
+	\item Decryption only uses the IV to decrypt the first block
+	\item Subsequent blocks are decrypted using two adjacent ciphertext blocks
+	\begin{itemize}
+		\item This means decryption can be parallelized
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Cipher Block Chaining}{Encrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/cbcModeEnc}
+\end{center}
+\end{frame}
+
+\begin{frame}{Cipher Block Chaining}{Decrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/cbcModeDec}
+\end{center}
+\end{frame}
+
+\begin{frame}{Block Cipher Hazards}{A ``simple'' attack}
+\begin{block}{Padding Oracle Attack}
+\begin{itemize}
+	\item Both ECB and CBC are susceptible
+	\item Occurs when a server leaks data detailing if a message is correctly padded
+	\begin{itemize}
+		\item Can be used to decrypt messages using the Oracle's key without the Oracle knowing
+	\end{itemize}
+	\item Couple popular variants released the last few years
+	\begin{itemize}
+		\item Lucky Thirteen
+		\item POODLE
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Cipher Feedback}{Overview}
+\begin{block}{CFB}
+\begin{itemize}
+	\item Effectively makes a stream cipher out of a block cipher
+	\item Two major improvements over CBC
+	\begin{itemize}
+		\item No need for padding
+		\item Only ever encrypt. No true decryption routine required
+	\end{itemize}
+	\item Similar to CBC: decryption can be parallelized but encryption cannot
+	\item An error in 1 bit during decryption will affect that bit plus the entire next block
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Cipher Feedback}{Encrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/cfbModeEnc}
+\end{center}
+\end{frame}
+
+\begin{frame}{Cipher Feedback}{Decrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/cfbModeDec}
+\end{center}
+\end{frame}
+
+\begin{frame}{Output Feedback}{Overview}
+\begin{block}{OFB}
+\begin{itemize}
+	\item Another block cipher acted as a stream cipher
+	\item Uses the power of XOR symmetry as both encryption and decryption are identical operations
+	\item Neither encryption nor decryption can be performed in parallel
+	\begin{itemize}
+		\item Slight exception in that some of the decryption work can be performed while waiting on proper input
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Output Feedback}{Encrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/ofbModeEnc}
+\end{center}
+\end{frame}
+
+\begin{frame}{Output Feedback}{Decrypt}
+\begin{center}
+\pgfimage[height = 4 cm]{pictures/ofbModeDec}
+\end{center}
+\end{frame}
+
+%padding oracle attacks
+
+\begin{frame}{Questions / Comments?}{}
+\end{frame}
+
+\end{document}
