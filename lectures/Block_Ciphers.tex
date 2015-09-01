@@ -211,7 +211,7 @@ A cipher that has the same key to encrypt and decrypt.
 
 \end{frame}
 
-\begin{frame}{Substitution-Permutation Network}
+\begin{frame}{Block Cipher Design}{Substitution-Permutation Network}
 	\centering
 	\begin{minipage}{0.45\textwidth}
 		\begin{figure}[h!]
@@ -227,10 +227,13 @@ A cipher that has the same key to encrypt and decrypt.
 			\item SHARK
 			\item Square
 		\end{itemize}
+
+		S-boxes must be invertible; this is usually accomplished using a finite
+		field.
 	\end{minipage}
 \end{frame}
 
-\begin{frame}{Feistel Network}
+\begin{frame}{Block Cipher Design}{Feistel Network}
 	\centering
 	\begin{minipage}{0.45\textwidth}
 		\begin{figure}[h!]
@@ -251,7 +254,7 @@ A cipher that has the same key to encrypt and decrypt.
 
 \end{frame}
 
-\begin{frame}{Lai-Massey}
+\begin{frame}{Block Cipher Design}{Lai-Massey}
 	\centering
 	\begin{minipage}{0.45\textwidth}
 		\begin{figure}[h!]
