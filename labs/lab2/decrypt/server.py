@@ -8,8 +8,8 @@ from library import ecb_encrypt, cbc_encrypt
 
 from Crypto.Cipher import AES
 
-FLAG = 'd6306d11-3d36-4535-8c32-e41fec917ae4'
-SECRET_DATA = map(ord, "Secret data: " + FLAG)
+FLAG = 'no_one_here_but_us_penguins'
+SECRET_DATA = map(ord, FLAG)
 
 KEY = [30, 123, 17, 190, 167, 204, 231, 196, 214, 49, 232, 202, 7, 89, 221, 17]
 
@@ -36,6 +36,8 @@ class Oracle(SocketServer.BaseRequestHandler):
     def handle(self):
         plaintext = base64_to_bytes(self.recv_until(self.request, sentinel="\n"))
         ciphertext = ecb_encrypt(plaintext + SECRET_DATA, self.key)
+
+        print '%r => %r' % (bytes_to_text(plaintext), bytes_to_text(ciphertext))
         self.request.sendall(bytes_to_base64(ciphertext) + "\n")
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
