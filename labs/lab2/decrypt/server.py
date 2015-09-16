@@ -8,10 +8,12 @@ from library import ecb_encrypt, cbc_encrypt
 
 from Crypto.Cipher import AES
 
-FLAG = 'no_one_here_but_us_penguins'
+FLAG = 'dummy_flag'
 SECRET_DATA = map(ord, FLAG)
 
-KEY = [30, 123, 17, 190, 167, 204, 231, 196, 214, 49, 232, 202, 7, 89, 221, 17]
+KEY = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+PORT = 5003
 
 def gen_random_array(length):
     return [random.randint(0, 255) for i in xrange(length)]
@@ -45,5 +47,5 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 if __name__ == '__main__':
     SocketServer.TCPServer.allow_reuse_address = True
-    t = ThreadedTCPServer(('', 1521), Oracle)
+    t = ThreadedTCPServer(('0.0.0.0', PORT), Oracle)
     t.serve_forever()

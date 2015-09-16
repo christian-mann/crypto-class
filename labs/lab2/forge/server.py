@@ -9,8 +9,10 @@ import BaseHTTPServer
 
 STATIC_KEY = [147, 234, 108, 117, 214, 137, 12, 174, 28, 251, 70, 20, 33, 245, 219, 205]
 
+FLAG = 'dummy_flag'
+
 HOST_NAME = '0.0.0.0'
-PORT_NUMBER = 8000
+PORT_NUMBER = 5002
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_HEAD(s):
@@ -64,6 +66,25 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 profile = s.decrypt_parse_cookie(enc_profile)
                 print 'profile', profile
                 s.wfile.write("<html><body><p id=\"profile_dict\">" + json.dumps(profile) + "</p></body></html>")
+                return
+        elif s.path.startswith('/get_flag'):
+            p = s.path.split("?")
+            if len(p) == 1:
+                s.wfile.write("<html><body><p>Please access <a href=\"/new_profile\">/new_profile</a> and create a profile first.</p></body></html>")
+                return
+            
+            params = urlparse.parse_qs(p[1])
+            if 'encrypted_profile' not in params:
+                s.wfile.write("<html><body><p>Please access <a href=\"/new_profile\">/new_profile</a> and create a profile first.</p></body></html>")
+                return
+            else:
+                enc_profile = params['encrypted_profile'][0].decode('hex')
+                profile = s.decrypt_parse_cookie(enc_profile)
+                print 'profile', profile
+                if profile['role'] == 'admin':
+                    s.wfile.write("<html><body><h1>Flag:</h1><p id=\"flag\">" + FLAG + "</p></body></html>")
+                else:
+                    s.wfile.write("<html><body><p>Sorry, you are not admin.</p></body></html>")
                 return
 
         s.wfile.write("<html><head><title>Title goes here.</title></head>")

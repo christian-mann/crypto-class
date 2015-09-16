@@ -1,5 +1,5 @@
 \newif\ifinstructornotes
-\instructornotestrue % comment out to hide instructor notes
+%\instructornotestrue % comment out to hide instructor notes
 
 \documentclass[11pt,oneside]{article}
 \usepackage{geometry}
@@ -123,17 +123,24 @@ network activity, I will be excited to work with you to arrive at a solution.
 You will write a function to detect which mode an encryption oracle is
 using.
 
-The oracle for this project will prompt for input. When it receives a chunk of
-input, it will pad that input on the left and right by 5-10 randomly-chosen
-bytes. It will then encrypt the result with a randomly chosen key and IV. The
+The oracle for this project is accessible at a URL. It takes input from a GET
+parameter. It will pad that input on the left and right by 5-10 randomly-chosen
+bytes, and will then encrypt the result with a randomly chosen key and IV. The
 oracle will use ECB one half of the time and CBC the other half of the time.
-This result will be sent back across the network.
+This result will be sent back as a result.
 
-At this point, your code should send back ``\texttt{ECB}'' or ``\texttt{CBC}'',
-based on your guess.
+At this point, your code should determine which of the two modes is being used,
+and navigate to a different url, passing the parameter ``\texttt{ECB}'' or
+``\texttt{CBC}'', based on your guess.
 
 You will need to guess correctly 100 times in a row, and then the server will
-send the flag. On the second incorrect response, the connection will terminate.
+send the flag. On the first incorrect response, the score will reset.
+
+\begin{verbatim}
+Server URL: http://10.10.200.42:5001
+New Challenge: /new_challenge?data=DEADBEEF0123
+Solve Challenge: /solve_challenge?guess=ECB
+\end{verbatim}
 
 \ifinstructornotes
 \textbf{Instructor Note:} This is challenge 11 of the Matasano crypto
@@ -147,12 +154,25 @@ integrity verification on its own. You will attack the ciphertext integrity of a
 system that uses ECB.
 
 The cryptosystem is a web service\footnote{kludgy raw TCP service also available
-if parsing HTTP is too complex}, that uses HTTP cookies. Cookie data is kept on
-the client, and kept encrypted. You should modify this encrypted data to change
-your role from \texttt{user} to \texttt{admin}.
+if parsing HTTP is too complex}. Data is kept on the client, and kept encrypted.
 
-%The system uses a single AES key, and encrypts in ECB mode. Hint for the
-%challenge -- \textit{copy-and-paste}.
+The format for the encrypted data is
+\texttt{email=foobar@example.com\&uid=10\&role=user}.
+
+You should modify this encrypted data to change your role from \texttt{user} to
+\texttt{admin}. You are free to create as many profiles as you wish, but you
+will not be allowed to include the characters \texttt{\&} or \texttt{=} in your
+email address.
+
+The system uses a single AES key, and encrypts in ECB mode. Hint for the
+challenge -- \textit{copy-and-paste}.
+
+\begin{verbatim}
+Server URL: http://10.10.200.42:5002
+New Profile: /new_profile?email=foobar@gmail.com
+Solve Challenge: /view_profile?encrypted_profile=ABCDEF
+View Flag: /get_flag?encrypted_profile=ABCDEF
+\end{verbatim}
 
 \ifinstructornotes
 \textbf{Instructor Note:} This is challenge 13 of the Matasano crypto
@@ -196,6 +216,11 @@ how:
 	\item Repeat for the next byte.
 \end{enumerate}
 
+\begin{verbatim}
+Server IP: 10.10.200.42
+Port: 5003
+\end{verbatim}
+
 \ifinstructornotes
 \textbf{Instructor Note:} This is challenge 12 of the Matasano crypto
 challenges.
@@ -211,7 +236,7 @@ level of access to the machine beyond a TCP connection, nor should you attempt
 to mount a Denial of Service attack on any host on the network.
 
 \section{Grading}
-Labs are due Thursday, September 10 at 11:59pm. You will need to turn in all
-recovered keys.
+Labs are due Thursday, September 17 at 11:59pm. You will need to turn in all
+recovered flags and any supporting code.
 
 \end{document}

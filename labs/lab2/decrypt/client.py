@@ -4,6 +4,9 @@ import base64
 
 from library import bytes_to_text
 
+HOST = '10.10.200.42'
+PORT = 5003
+
 class OracleProxy:
     def __init__(self, host, port):
         self.host = host
@@ -33,5 +36,5 @@ class OracleProxy:
         return base64.b64decode(ciphertext)
 
 if __name__ == '__main__':
-    proxy = OracleProxy("localhost", 1521)
+    proxy = OracleProxy(HOST, PORT)
     print proxy.process("Hello, World!").encode('hex')

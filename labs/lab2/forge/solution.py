@@ -42,6 +42,23 @@ class Proxy:
 
 if __name__ == '__main__':
     p = Proxy('http://%s:%d' % (HOST, PORT))
-    profile, enc_profile = p.new_profile('foobar@gmail.com')
-    print p.decrypt_to_dict(enc_profile)
-    print p.get_flag(enc_profile) # will throw exception
+    profile, enc_profile = p.new_profile('foobar@gma')
+    print enc_profile
+    profile, enc_profile = p.new_profile('foobar@gmaadmin\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0c')
+    print enc_profile
+
+    profile, enc_profile = p.new_profile('foobar@gmaadmin\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b')
+    print enc_profile
+
+    adminbbbbb = enc_profile[32:64]
+    print 'adminbbbbb', adminbbbbb
+
+    profile, enc_profile = p.new_profile('1234567890123')
+
+    print enc_profile
+    forged_profile = enc_profile[:-32] + adminbbbbb
+    print forged_profile
+
+    print p.decrypt_to_dict(forged_profile)
+
+    print p.get_flag(forged_profile)

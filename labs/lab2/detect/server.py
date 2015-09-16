@@ -15,9 +15,11 @@ from library import ecb_encrypt, cbc_encrypt
 
 from Crypto.Cipher import AES
 
-FLAG = 'youre_a_hairy_wizard'
-
+FLAG = 'dummy_flag'
 NUM_REQUIRED = 8
+
+PORT = 5001
+
 
 def gen_random_array(length):
     return [random.randint(0, 255) for i in xrange(length)]
@@ -126,5 +128,5 @@ def web_solve_challenge():
         return "<html><body><p id=\"result\">%s</p><p id=\"Progress\"><span id=\"num_correct\">%d</span> in a row correct.</p></body></html>" % (correct_str, session['num_correct'],)
 
 if __name__ == '__main__':
-    app.secret_key = '\x97"r\xa7d0\xc8\xf9\xa7\xf7y\xb9\x8a\xe6\xa83\xb5s\x16\x07\xcdm\x9f\xed'
-    app.run(debug=True)
+    app.secret_key = '0123456789012345678901234567890'
+    app.run('0.0.0.0', PORT)

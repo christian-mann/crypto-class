@@ -74,5 +74,5 @@ class Solver:
         return self.proxy.flag
 
 if __name__ == '__main__':
-    g = Solver('http://localhost:5000')
+    g = Solver('http://10.10.200.42:5001')
     print g.run()

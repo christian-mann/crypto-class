@@ -3,6 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
+HOST = '10.10.200.42'
+PORT = 5001
+
 class Proxy:
     def __init__(self, host):
         self.host = host
@@ -57,5 +60,5 @@ class Guesser:
 
 
 if __name__ == '__main__':
-    g = Guesser('http://localhost:5000')
+    g = Guesser('http://%s:%d' % (HOST, PORT))
     print g.run()
