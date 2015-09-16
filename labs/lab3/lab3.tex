@@ -1,0 +1,196 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 3 Assignment:\\Block Chaining Attacks}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+This lab will involve various attacks on block ciphers. While the cipher used
+will be AES, this should not affect your decryption code in any way. Successful
+attacks rarely target the core cipher; rather, you will be attacking the
+\textit{mode} of encryption used. Particularly, for this project you will be
+mounting attacks on the CBC mode of encryption.
+
+Each of these challenges will involve a service on the network, giving out
+ciphertexts and returning responses. Your code will need to interact with this
+service. In every case, the end goal will be the retrieval of a flag. This will
+be accomplished in different ways, depending on the challenge.
+
+Learning to program using sockets is not the goal of this class; you can take Network
+Security or CNO for that. Thus, I will provide example socket code for any
+languages I know are being used. If you have a language that does not support
+network activity, I will be excited to work with you to arrive at a solution.
+
+\section{Assignment}
+
+\subsection{Part 1: CBC Bitflip Attacks}
+
+This section is similar to the ECB Forge section of Lab 2. A service is set up
+that will take some amount of user data, prepend the string:
+\texttt{comment1=cooking\%20MCs;userdata=}, and append the string:
+\texttt{;comment2=\%20like\%20a\%20pound\%20of\%20bacon}.
+
+The service removes the ';' and '=' characters.
+
+The function then pads the input to the 16-byte AES block length, and encrypts
+it with a static unknown AES key.
+
+The other end of the service decrypts the string and looks for
+\texttt{;admin=true;}.
+
+Modify the ciphertext to cause the second function to return true.
+
+Use the fact that in CBC mode, a 1-bit error in a ciphertext block:
+\begin{itemize}
+	\item Completely scrambles the block the error occurs in
+	\item Produces the identical 1-bit error(/edit) in the next ciphertext block.
+\end{itemize}
+
+\begin{verbatim}
+Server URL: http://10.10.200.42:5031
+Bake Cookie: /update_userdata?userdata=DEADBEEF0123
+Taste Cookie: /get_flag?cookie=ABCDEF&iv=ABCDEF
+\end{verbatim}
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 16 of the Matasano crypto
+challenges.
+\fi
+
+\subsection{Part 2: Padding Oracle Attack}
+
+In this section, you will decrypt data that is being secured with AES-CBC under
+an adaptive chosen plaintext attack.
+
+The first URL, a generator, will encrypt the flag under an unknown key and a
+random, known IV.
+
+The second URL will consume a ciphertext/IV and determine whether the plaintext
+is padded correctly. It will return this to the user.
+
+Use these two oracles to determine the flag.
+
+There are many, many writeups available that explain how to exploit a padding
+oracle attack, but my favorite is
+\url{http://robertheaton.com/2013/07/29/padding-oracle-attack/}
+
+\begin{verbatim}
+Server URL: http://10.10.200.42:5032
+Generate Ciphertext: /get_ciphertext
+Check Padding: /check_padding?encrypted_data=ABCDEF&iv=ABCDEF
+\end{verbatim}
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 17 of the Matasano crypto
+challenges.
+\fi
+
+\section{Rules}
+
+Please do not exploit any non-cryptographic vulnerabilities you may discover on
+any machines. You should not need to attempt\footnote{I hate telling people they
+are not allowed to hack my services. If you want to try, please go ahead. If you
+find something, just tell me, and don't use it to cheat on the lab.} to gain any
+level of access to the machine beyond a TCP connection, nor should you attempt
+to mount a Denial of Service attack on any host on the network.
+
+\section{Grading}
+Labs are due Tuesday, September 29 at 11:59pm. You will need to turn in all
+recovered flags and any supporting code.
+
+\end{document}

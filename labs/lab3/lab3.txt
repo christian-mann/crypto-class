@@ -1,0 +1,15 @@
+
+CBC Bitflip Attack
+
+Cookies, encrypted with AES/CBC/PKCS5
+
+SAVED_COOKIE_DATA:{"username": "ccmann", "admin": "no", "name": "Christian"}
+
+username:ENCRYPTED_DATA: username
+username_iv:deadbeefdeadbeef
+admin:ENCRYPTED_DATA: 0
+admin_iv:deadbeefdeadbeef
+name:ENCRYPTED_DATA: Christian
+name_iv:deadbeefdeadbeef
+
+Key and nonce are re-created each time
