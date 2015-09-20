@@ -1,0 +1,232 @@
+\documentclass[12pt]{beamer}
+%\documentclass[handout,xcolor=pdflatex,dvipsnames,table,12pt]{beamer}
+\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage{amsmath} % for math AMS fonts
+\usepackage{graphicx} % to include figures
+\usepackage{subfigure} % to have figures in figures
+\usepackage{multimedia} % to include movies
+\usepackage{listings} % to display code
+\usepackage{colortbl} % colored tables
+\usepackage[latin1]{inputenc} % support for accented letters, etc.
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{ulem}
+\usepackage{fixltx2e}
+
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+
+\title[Introduction to Cryptography]{Stream Ciphers}
+\author{Chad Johnson -- chad-johnson@utulsa.edu}
+\institute{University of Tulsa\\
+Tulsa, Oklahoma 74104}
+\date{\today}
+
+\logo{\includegraphics[height=1.5cm]{pictures/SFSLogoMain}}
+
+\begin{document}
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+\newtheorem{mydef}{Definition}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{}
+\begin{block}{The loose definition}
+A stream cipher is a symmetric key cipher where plaintext bits are combined with a pseudorandom cipher keystream to produce a stream of ciphertext bits.
+\begin{itemize}
+	\item Key point: The cipher keystream must not be recoverable.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{The operation}
+\begin{block}{}
+\begin{itemize}
+	\item Each plaintext bit is operated on one at a time with the keystream bit
+	\item Example
+	\begin{itemize}
+		\item C\textsubscript i = P\textsubscript i \textless oper\textgreater  K\textsubscript i
+		\item C\textsubscript i+1 = P\textsubscript i+1 \textless oper\textgreater  K\textsubscript i+1
+		\item C\textsubscript i+n = P\textsubscript i+n \textless oper\textgreater  K\textsubscript i+n
+		\item where \textless oper\textgreater is whatever operations are used in the stream cipher algorithm
+	\end{itemize}
+	\item Operation is commonly XOR
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{One Time Pad}
+\begin{block}{Vernam Cipher vs Stream Cipher}
+Very similar to a one time pad. However, huge differences.
+\begin{itemize}
+	\item One Time Pad keystream is:
+	\begin{itemize}
+		\item at least as long as the plaintext to encrypt
+		\item ideally completely random
+		\item never used more than once
+	\end{itemize}
+	\item Stream Cipher keystream is:
+	\begin{itemize}
+		\item often a fixed size, e.g. 128-bits
+		\item pseudorandom 
+		\item repeated both during the stream and potentially in later encryptions
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Popular Types}
+\begin{block}{Synchronous Stream Cipher}
+\begin{itemize}
+	\item Keystream generated separately from plaintext and ciphertext
+	\item Sender and receiver must stay in sync
+	\item Added or dropped bits from message causes two ends to lose sync
+	\begin{itemize}
+		\item Causing complete loss of ability to decrypt
+	\end{itemize}
+	\item Single bit errors in transmission result in only a single bit decryption error
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Popular Types}
+\begin{block}{Self-synchronizing Stream Cipher}
+\begin{itemize}
+	\item Keystream computed from previous N ciphertext bits
+	\item ``Self-synchronizing'' meaning the sender and receiver can sync back up in case of added or removed bits
+	\item Single bit errors in transmission result in N plaintext bits
+	\item Examples: Cipher Feedback (CFB) and Output Feedback (OFB) modes
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Liner Feedback Shift Registers}
+\begin{block}{LFSRs}
+\begin{itemize}
+	\item Shift register whose input is a linear function of it's previous state
+	\begin{itemize}
+		\item Most common LFSR: XOR
+	\end{itemize}
+	\item Easy to implement in hardware
+	\item Easy to validate mathematically
+	\item WRT Stream Ciphers, not great protection
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Improvements on LFSRs}
+\begin{block}{Techniques to improve upon LFSRs}
+\begin{itemize}
+	\item Non-linear combining functions 
+	\begin{itemize}
+		\item Set the output of several parallel LFSRs as input to a non-linear Boolean combining function
+	\end{itemize}
+	\item Clock-controlled generators
+	\begin{itemize}
+		\item LFSR clocked at irregular intervals
+		\item Couple different techniques
+	\end{itemize}
+	\item Filter generators
+	\begin{itemize}
+		\item To improve security, pass entire state of LFSR into a non-linear filtering function
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Security Considerations}
+\begin{block}{What are things to consider?}
+\begin{itemize}
+	\item Large keystream
+	\item Impossible to recover keystream or initial state of keystream generation
+	\item No biases toward 0 or 1, for instance to look like noise
+	\item No relationships between keystream and ciphertext or plaintext
+	\begin{itemize}
+		\item To provide protection against known *text attacks
+	\end{itemize}
+	\item Ideally, no weak keys (the dream!)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Common Protocols}
+\begin{block}{Stream Ciphers in Use}
+\begin{itemize}
+	\item RC4 - hands down, the most common
+	\begin{itemize}
+		\item Used in WEP, SSL, TLS
+	\end{itemize}
+	\item A5/1, A5/2 - GSM encryption
+	\item Helix/Phelix, ISAAC, Panama, ...
+\end{itemize}
+\end{block}
+\begin{block}{The end result?}
+\begin{itemize}
+	\item All are claimed to be insecure.
+	\item Some actually proven to be insecure.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Attacks}
+\begin{block}{Key Reuse Attack}
+\begin{itemize}
+	\item Alice uses the same key to messages to both Bob and Charlie
+	\item Possible to extract the key by performing operations on both messages to Bob and Charlie
+	\begin{itemize}
+		\item Especially true if XOR is the only means to encrypt the message
+	\end{itemize}
+	\item One solution is to use an IV to create a one-time key, such as in WEP and WPA.
+	\begin{itemize}
+		\item The issue with WEP is the key was only 24 bits long, not nearly long enough.
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Stream Ciphers}{Attacks}
+\begin{block}{Bit-flipping Attack}
+\begin{itemize}
+	\item Adversary can modify known fields to influence the ciphertext and when decrypted, control the plaintext
+	\item One remediation is to use a MAC to detect tampering
+\end{itemize}
+\end{block}
+\begin{block}{Correlation Attack}
+\begin{itemize}
+	\item Possible if a strong correlation can be identified WRT individual inputs to LFSRs and output of combining functions
+	\item If this can occur in a few different locations, you can ease the processing required to break the entire cipher
+	\begin{itemize}
+		\item Divide and Conquer algorithm! This should sound familiar.
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Questions / Comments?}{}
+\end{frame}
+
+\end{document}
