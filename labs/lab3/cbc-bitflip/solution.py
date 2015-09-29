@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import json
 
 HOST = '10.10.200.42'
-HOST = 'localhost'
 PORT = 5031
 
 class Proxy:

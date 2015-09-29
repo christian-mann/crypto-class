@@ -8,7 +8,6 @@ import copy
 import random
 
 HOST = '10.10.200.42'
-HOST = 'localhost'
 PORT = 5032
 
 class Proxy:
