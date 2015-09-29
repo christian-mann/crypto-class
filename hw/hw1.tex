@@ -1,0 +1,249 @@
+\documentclass{exam}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mdframed}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Z}}
+\newcommand{\?}{\stackrel{?}{=}}
+
+\newcommand{\mybox}[1]{\fbox{\begin{minipage}#1\end{minipage}}}
+
+\title{Applied Cryptography\\Homework 1}
+%\author{Christian Mann}
+\date{Due September 29, 2015}
+\begin{document}
+\maketitle
+%\printanswers
+
+% this is exposition for Question 1, but I can't put it in \begin{questions}
+
+\begin{questions}
+
+	\section*{Functions}
+
+	\question 
+	Let $f(x) = x^2 + x$ on $\R$. Is $f$ onto? Is $f$ one-to-one? Describe $f(P)$, where $P$ is the set of positive real numbers.
+	\begin{solution}
+		$f$ is not onto: $-5 \not\in \mathrm{Range}(f)$. \\
+		$f$ is not one-to-one: $f(-1) = f(0) = 0$. \\
+		$f(P)$ is described exactly by $P$.
+	\end{solution}
+	
+	\begin{mdframed}
+		We often are interested in the \textit{image} of a set under a function.
+		The image of $P$ under $f$ is written as $f(P)$ and is equal to
+		\[ f(P) = \{f(p) : p \in P\} \]
+		
+		We say that $A$ is a subset of $B$, or $A \subseteq B$, if every element in
+		$A$ is in $B$. To prove this, assume $a \in A$ and prove that $a \in B$.
+
+		$\alpha: S \rightarrow T$ means ``$\alpha$ is a function from $S$ to
+		$T$.'' It
+		does not claim anything regarding one-to-one, onto, or any other properties
+		of the function.
+
+	\end{mdframed}
+
+	\question 
+	Prove that if $\alpha: S \rightarrow T$ and $A$ and $B$ are subsets of $S$, then $\alpha(A \cup B) = \alpha(A) \cup \alpha(B)$.
+	\begin{solution}
+		Let $\alpha: S \rightarrow T$, $A \subseteq S$, $B \subseteq S$.
+
+		Now let $y \in \alpha(A \cup B)$. So there exists a $y \in A \cup B$ s.t. $y = \alpha(x)$. Either $x \in A$ or $x \in B$. So either $\alpha(y) \in \alpha(A)$ or $\alpha(y) \in \alpha(B)$. Therefore $y \in \alpha(A) \cup \alpha(B)$.
+
+		On the other hand, let $y \in \alpha(A) \cup \alpha(B)$. So either $y \in \alpha(A)$ or $y \in \alpha(B)$. So there exists an $x$ s.t. $y = \alpha(x)$ and either $x \in A$ or $x \in B$. So $x \in A \cup B$. Therefore $f(x) = y \in \alpha(A \cup B)$.
+	\end{solution}
+
+	\question 
+	\begin{parts}
+		\part Prove that if $\alpha: S \rightarrow T$, and $A$ and $B$ are subsets of $S$, then $\alpha(A \cap B) \subseteq \alpha(A) \cap \alpha(B)$.
+		\begin{solution}
+			Let $y \in \alpha(A \cap B)$. Then $\exists x \in A \cap B$ s.t. $y = \alpha(x)$. Then $x \in A$ and $x \in B$. So $y \in \alpha(A)$ and $y \in \alpha(B)$. Thus $y \in \alpha(A) \cap \alpha(B)$.
+		\end{solution}
+		\part Give an example (specific $S$, $T$, $A$, $B$, and $\alpha$) to show that equality need not hold in part (a).
+		\begin{solution}
+			Let $S = \{1,2\}$. Let $A = \{1\}$, $B = \{2\}$. Let $\alpha(1) = \alpha(2) = 1$. Then
+			\begin{align*}
+				A \cap B                 &= \varnothing \\
+				\alpha(A \cap B)         &= \varnothing \\
+				\alpha(A) \cap \alpha(B) &= \{1\} \cap \{1\} \\
+				                         &= \{1\}
+			\end{align*}
+		\end{solution}
+	\end{parts}
+
+	\question 
+	Which of the functions sine, cosine, and tangent, as mappings from $\R$ to $\R$, are invertible?
+	\begin{solution}
+		Sine and cosine are both not onto: $\lnot\exists x: \sin(x) = 2$ and $\lnot\exists x: \cos(x) = 2$. \\
+		Tangent is not one-to-one: $\tan(0) = \tan(2\pi) = 0$. \\
+		Therefore none are invertible.
+	\end{solution}
+
+	\section*{Operations}
+
+	\question 
+	Let $\star$ be defined as $m \star n = 2^{mn}$.
+	\begin{parts}
+		\part Is $\star$ an operation on the set of integers?
+		\begin{solution}
+			No:
+			\begin{align*}
+				m = -1&, n = 1 \\
+			m \star n &= 2^{-1 \cdot 1} \\
+					  &= 2^{-1} \\
+					  &= \frac{1}{2} \not\in \Z
+			\end{align*}
+		\end{solution}
+	\end{parts}
+
+	\question 
+	\begin{parts}
+		\part Complete the Cayley table of $\star$ on $\{u, v\}$ in such a way that $u$ becomes an identity element. In how many ways can this be done?
+			\[
+			\begin{array}{c|cc}
+				\hline
+				\star & u & v \\
+				\hline
+				u &  &  \\
+				v &  & 
+			\end{array}
+			\]
+		\begin{solution}
+			\[
+			\begin{array}{c|cc}
+				\hline
+				\star & u & v \\
+				\hline
+				u & u & u \\
+				v & u & \cdot
+			\end{array}
+			\]
+			There are two ways to fill in the last entry.
+		\end{solution}
+		\part Can the table be completed in such a way that $u$ and $v$ both become identity elements?
+		\begin{solution}
+			No. It is not possible for two distinct elements to both be identity elements: if $u$ and $v$ are both identity elements, then $u \star v = u$ and $u \star v = v$; thus $u = v$.
+		\end{solution}
+		\part Prove: An operation $\star$ on a set $S$ (any $S$) can have at most one identity element.
+		\begin{solution}
+			See (b).
+		\end{solution}
+	\end{parts}
+
+	\begin{mdframed}
+		A set $S$ is \textit{closed} with respect to an operation $\star$ if for
+		every $x, y \in S$, $x \star y \in S$.
+	\end{mdframed}
+
+	\question 
+	Assume that $\star$ is an associative operation on $S$ and that $a \in S$. Let
+		\[ C(a) = \{x: x \in S \,\mathrm{and}\, a \star x = x \star a\} \]
+	Prove that $C(a)$ is closed with respect to $\star$.
+	\begin{solution}
+		First of all, we can see that $a \in C(a)$, since $a \star a = a \star a$.
+
+		Let $b, c \in C(a)$. We know that $b \star c \in S$, since $\star$ is an operation on $S$.
+		\begin{align*}
+			b \star (a \star c) &= b \star (a \star c) \\
+			(b \star a) \star c &= b \star (a \star c) \\
+			(a \star b) \star c &= b \star (c \star a) \\
+			a \star (b \star c) &= (b \star c) \star a \\
+		\end{align*}
+		Therefore $b \star c \in C(a)$.
+	\end{solution}
+
+	\section*{Groups}
+
+	\begin{mdframed}
+		A \textbf{group} is a set $G$ together with an operation $\star$ on $G$ such
+		that each of the following three properties hold:
+		
+		\textit{Associativity}: $ a \star (b \star c) = (a \star b) \star c $
+		
+		\textit{Existence of an identity element}
+			There is an element $e \in G$ such that $a \star e = e \star a = a$ for
+			each $a \in G$.
+		
+		\textit{Existence of inverse elements}
+			For each $a \in G$ there is an element $b \in G$ such that $a \star b =
+			b \star a = e$.
+		
+		\textbf{Example}: The integers together with the addition operator form
+		a group. You can see the three properties hold.
+
+		\textbf{Example}: The set of even integers together with addition is a
+		group. The sum of two even integers is an even integer. The associative law
+		is true for all integers, so it is true for the subset of all even integers.
+		The identity element is $0$ (an even integer), and the inverse of an even
+		integer $x$ is $-x$ (again, an even integer).
+
+		\textbf{Example}: The set of positive integers is not a group.
+
+		\textbf{Example}: The set $\{0\}$ with addition is a group. Note: Because a
+		group must contain an identity element, the set underlying a group must
+		always contain at least one element.
+	\end{mdframed}
+
+	\question 
+	Verify that $S = \{2^m3^n : m,n \in \Z\}$ is a group with respect to multiplication. Identify clearly the properties of $\Z$ and $\R$ that you use.
+	\begin{solution}
+		\begin{enumerate}
+			\item Given any two elements, their product is in the group:
+				\[ 2^a3^b \cdot 2^c3^d = 2^{a+c}3^{b+d} \]
+				Therefore $S$ is closed under multiplication.
+			\item The identity element is $1 = 2^03^0$. For any element $x \in S$, $1 \cdot x = x \cdot 1 = x$.
+			\item For any element $2^m3^n$ in $S$, its inverse is in the group:
+				\[ 2^m3^n \cdot 2^{-m}3^{-n} = 2^{m-m}3^{n-n} = 2^03^0 \]
+			\item Multiplication is associative, as a property of $\R$.
+		\end{enumerate}
+	\end{solution}
+
+	\question 
+	Let $G$ denote the set of all $2 \times 2$ real matrices $A$ with $\det(A) \not= 0$ and $\det(A) \in \Q$ (the rational numbers).
+	\begin{parts}
+		\part Prove that $G$ is a group with respect to multiplication. Matrix
+		multiplication is always associative, so you may assume that. But check
+		closure and the existence of an identity element and inverse elements
+		very carefully.
+		\begin{solution}
+			\begin{enumerate}
+				\item Given any two elements in $G$, we check whether their product is also in $G$. The determinant of the product of two matrices is the product of their determinants. Since neither determinant is equal to $0$, the product will also not be. Since $\Q$ is closed under multiplication, $G$ is also closed under multiplication.
+				\item The identity element is the standard identity matrix (ones on the diagonal and zeros elsewhere).
+				\item Every element in $G$ has an inverse, as defined by linear algebra. The determinant of the inverse will be the inverse of the determinant of the original matrix. Therefore, the determinant is a rational number not equal to zero, so it is in $G$.
+			\end{enumerate}
+		\end{solution}
+
+		\part A group is called \textbf{Abelian} iff its operation is
+		commutative. Is this group Abelian?
+		\begin{solution}
+			No. Consider the matrices
+		\[ A = \left(\begin{array}{cc} 1 & 1 \\ 2 & 3 \end{array}\right) \]
+			and
+		\[ B = \left(\begin{array}{cc} 2 & 3 \\ 3 & 4 \end{array}\right) \]
+			The determinant of $A$ is $1$, and the determinant of $B$ is 2. Their products are
+		\[ A \cdot B = \left(\begin{array}{cc} 5 & 7 \\ 13 & 18 \end{array}\right) \]
+			or
+		\[ B \cdot A = \left(\begin{array}{cc} 8 & 11 \\ 11 & 15 \end{array}\right) \]
+			Therefore $A \cdot B \not= B \cdot A$. Therefore $G$ is non-Abelian.
+		\end{solution}
+	\end{parts}
+
+	\question 
+	Prove: If $(G, \star)$ is a group, $a \in G$, and $a \star b = b$ for some $b \in G$, then $a$ is the identity element of $G$.
+	\begin{solution}
+		Let $e$ be the identity element.
+		\begin{align*}
+			             a \star b &= b \\
+			a \star b \star b^{-1} &= b \star b^{-1} \\
+			             a \star e &= e \\
+			                     a &= e
+		\end{align*}
+	\end{solution}
+
+\end{questions}
+\end{document}
