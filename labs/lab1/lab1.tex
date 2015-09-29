@@ -1,0 +1,167 @@
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 1 Assignment:\\Ancient Cryptography and
+Ciphertext-Only Attacks}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+The goal of this lab is to be an exercise in ciphertext-only cryptanalysis.
+You will be given a sequence of ciphertexts with known encryption methods, but
+unknown keys.
+
+You will be required to crack the encryption on each file. The decrypted
+plaintext alone will not be sufficient; you will be required to submit your code
+as well, or an explanation of how you cracked it, if you used pencil-and-paper
+methods.
+
+\section{Assignment}
+
+I will distribute a zip file containing each of the ciphertexts. They are
+encrypted as follows:
+
+\subsection{Part 1}
+This file has been encrypted with a Caesar cipher.
+
+\subsection{Part 2}
+This file has been encrypted with a monoalphabetic cipher. Whitespace can be
+trusted, but you should not need to consider it in your analysis.
+
+You will need some way of scoring a candidate English plaintext. Character
+frequency is a good metric. Evaluate each output and choose the one with the
+best score.
+
+\subsection{Part 3}
+This file has been encrypted with a single-byte XOR key, and then
+base64-encoded. You will need to base64-decode the file before automated
+analysis. This is very similar to part 2, but more closely resembles modern
+cryptography.
+
+\subsection{Part 4}
+This file has been encrypted with a multiple-byte XOR key, in a similar way to
+Viginere -- the key is repeated for the length of the file. Again, this file has
+been base64-encoded before distribution. Below is a suggested decryption
+strategy.
+
+\begin{enumerate}
+	\item Consider KEYSIZE between 2 and some upper bound, say 50.
+	\item Write a function to compute the edit (Hamming) distance between two strings --
+		the number of different bits.
+	\item For each value of KEYSIZE, take the first KEYSIZE bytes, and the
+		second KEYSIZE bytes, and determine the edit distance between them.
+	\item Because English text, as encoded in ASCII, is very self-similar, the
+		KEYSIZE with the smallest edit distance is probably the right size.
+	\item Break the text into blocks of KEYSIZE length.
+	\item Transpose the blocks. You now have KEYSIZE slices.
+	\item Each slice is now a single-byte XOR cipher. You already have code to
+		solve this.
+	\item Put the key bytes together and you have the key.
+\end{enumerate}
+
+\subsection{Part 5 - Bonus}
+This file has been encrypted with a Viginere cipher. I will not outline a
+strategy for this; there are plenty available online.
+
+\section{Suggested Strategy}
+The parts are arranged roughly in order of difficulty. Before beginning to crack
+any of the encryption techniques, I recommend you begin by writing an
+\textit{encryptor} for each of them, so that you can generate ciphertext for
+known plaintext, and a decryptor, so that you can decrypt a file, given a known
+key.
+
+\section{Grading}
+Labs are due September 3 at 11:59pm. Labs will be graded on: proper decryption
+of ciphertext, and validity of technique applied. Code quality may factor
+into the grade.
+
+\end{document}

@@ -1,0 +1,8 @@
+
+Caesar Break
+
+1. Break a caesar cipher
+2. Break a monoalphabetic cipher
+3. Crack a viginere key
+4. Break a single-byte XOR
+5. Break a repeated-key XOR
