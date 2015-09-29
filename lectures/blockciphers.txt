@@ -1,0 +1,49 @@
+KR-security
+
+
+Block cipher: Family of permutations on chunk, indexed by key
+	E_K: {0,1}^l -> {0,1}^l is a permutation
+	E_K, E_K^-1 are efficient
+
+	Also expressible as E: {0,1}^k x {0,1}^l -> {0,1}^l
+
+Example of a block cipher is XOR, if k == l
+
+To use a block cipher:
+	K randomly chosen from {0,1}^k, the keyspace
+	K distributed to trusted parties (only)
+	A, B use E_K and E_K^-1
+
+	E is public
+
+
+
+Key-recovery security game:
+
+- Key is selected, not given to A
+- A can submit plaintext M and get back C, as many times as desired
+- A outputs guess K'
+- A wins if K' is correct
+
+
+Security requirements:
+	COA: Ciphertext-only
+	KPA: Known-plaintext
+		Crib: Synonym
+		Kiss: Transmitting same message plain and encrypted
+	CPA: Chosen-plaintext
+		CPA: Batch chosen-plaintext
+		CPA2: Adaptive
+	CCA: Chosen-ciphertext
+		CCA1: Lunchtime attack
+		CCA2: Adaptive, can't query target ciphertext
+	
+	There are others, having to do with integrity. We won't talk about those at
+	the moment.
+
+DES
+
+Block cipher
+
+56-bit key, 64-bit block size
+

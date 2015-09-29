@@ -1,0 +1,101 @@
+
+Padding Oracle
+	Any time you give the server malformed ciphertext and the server responds
+	with anything but "fuck off", it's probably a vulnerability
+
+Predictable IV in CBC
+	Can use to decrypt ciphertext (really, can use to confirm plaintext guess)
+
+	Attacker sends C_1 = (IV + M)
+	Oracle computes E_K( (IV + M) + IV )
+	             =  E_K(M)
+	
+	If you know part of a block, for example, you can use this to obtain the
+	last byte
+
+Timing Attacks
+	Guess what? Some servers tell you "fuck off" but do it in different ways
+	depending on the error.
+
+	LuckyThirteen (TLS)
+
+Brute Force
+	Known-plaintext attack
+
+	DES is 56 bits
+	RSA Security set up DES Challenges
+		1997 - 3 months
+			"The secret message is: Many hands make light work."
+		1998 - 56 hours
+			"The secret message is: It's time for those 128-, 192-, and 256-bit keys."
+			EFF Machine $250k
+		1999 - 22 hours
+			"See you in Rome (second AES Conference, March 22-23, 1999)"
+		2006 - 7 days
+			COPACOBANA (120 FPGAs) @ $10k
+	
+	Straight-up: 56-bytes is too low for security
+
+	So... double it, right? Just double-encrypt it
+	Well... Meet-in-the-middle
+
+	TDES makes the key longer
+		ciphertext = 3 rounds of DES, with K_1, K_2, K_3
+		Question: How much security does this offer?
+			Something like 2 ^ 112 or 2 ^ 115 ish (MITM)
+		So... let's not pretend to be something we aren't:
+			E_K1 o E_K2 o E_K1
+
+
+		Remember how DES encryption is basically the same as decryption, but
+		with an inverse key schedule?
+
+		They wanted to be able to use this similar to real DES, so:
+			E_K1 o D_K2 o E_K1
+
+		Particularly, if K_1 == K_2 this is just DES
+
+MITM
+	Known-plaintext attack
+	Given (M, C) plain-cipher pair:
+		we know C = E(K_2, E(K_1, M))
+
+	Compute E(K_i, M) for each possible key, store lookup table
+	Compute D(K_i, C) for each possible key, check lookup table
+
+	Requires 2^57 space and 2^57 operations (ask this question, have students
+	work it out on their own)
+
+	This is at the edge of practicality. You can trade space for time to an
+	extent e.g. 2^39 space with 2^73 operations
+
+	Anyway, way less than the 2^112 that the algorithm purports
+
+Linear
+
+	If a cipher is purely linear, it can be expressed as a system of linear
+	equations. That would be BAD.
+
+	Linear cryptanalysis = make linear equations that are "mostly" true -- e.g.
+	P_1 + P_3 + C_1 = K_2
+
+	Really, we look for things that hold with probability > 1/2
+
+	There is an algorithm (Matsui's Algorithm 2) that lets us arrive at guesses
+	for the key bits given "enough" P-C pairs.
+
+	Anyway, do that for as many linear approximations as you can find until you
+	get bored, and then brute force the remaining bits.
+
+	For DES:
+		2^43 plaintext-ciphertext blocks to get the key.
+		Later reduced to 2^39
+		At 8 bytes each, that's 4 TB of data.
+		Why do you even need the key at that point?
+
+Differential
+	
+	Chosen-Plaintext Attack
+
+	Vaguely: Change the input and look at changes in output. See anything? Make
+	an equation about it.
