@@ -1,0 +1,88 @@
+Re-iterate Fermat's Little Theorem
+
+What elements are invertible mod(p)?
+	Everything except [0] = [p]
+What elements are invertible mod(n)?
+	Given a, find b s.t. ab == 1 (mod n)
+
+	ab + kn = 1
+
+	This is possible only if gcd(a, n) == 1
+
+	So every element that is coprime to n has an inverse
+
+Particularly (say this, don't prove it): These elements form a group
+structure, in an analogous way to the prime group
+
+Soooo we can make the same argument as before:
+	{x_1, x_2, x_3, ..., x_tot(n)}
+
+	is equivalent mod n to
+
+	{ax_1, ax_2, ax_3, ..., ax_tot(n)}
+
+	So multiplying:
+
+	prod(x_i, i, 0, tot(n)) == prod(a x_i, i, 0, tot(n))
+	prod(x_i, i, 0, tot(n)) == a^tot(n) * prod(x_i, i, 0, tot(n))
+
+	Cancelling requires that gcd(a, n) == 1:
+
+	1 == a^tot(n) (mod n)
+
+	Incidentally, there is a separate proof that
+
+	a ^ (tot(n) + 1) == a (mod n)
+
+	which works regardless of greatest common divisor
+
+Demonstration
+	n = 10 = 2 * 5
+	tot(n) = (2-1) (5-1) = 4
+
+	Take a coprime digit d (either 3, 7, or 9) and show that d ^ 4 == 1 (mod 10)
+
+	Take any digit d, and show that d ^ (4 + 1) == d (mod 10)
+
+We can use this:
+	C = m ^ e (mod n)
+	M = C ^ d (mod n) = m ^ ed (mod n)
+
+	We need m ^ ed == m (mod n)
+
+	We let ed == 1 (mod tot(n)); i.e. e = d^-1 (mod tot(n))
+
+	So
+	m ^ ed = m ^ (k tot(n) + 1)
+	       = m ^ k tot(n) * m
+	       = 1 * m
+	       = m
+	
+How to compute the totient, though?
+	For prime, tot(p) = p-1
+	This reduces the above formula to FLT
+
+	Easy if you know the prime factorization
+
+	There exists a proof (that I don't want to get into) that
+	tot(p1 p2) = (p1 - 1) (p2 - 1)
+
+	We don't know a better way to compute totient than factoring N
+	We are /pretty sure/ that factoring is hard
+		However, it's not *impossible* -- we'll get to that later
+
+	So the prime factorization of N is the trapdoor.
+
+So now we do an example
+
+	p = 11
+	q = 13
+	n = 143
+	tot(n) = 10 * 12 = 120
+
+	Let e = 7 (just needs to be coprime with n -- 3 is often chosen)
+	Then d = e^-1 (mod tot(n)) = 103
+
+	m = 9
+	C = m^e (mod n) = 9^7 (mod 143) = 48
+	M = m^d (mod n) = 48 ^ 103 (mod 143) = 9 = m
