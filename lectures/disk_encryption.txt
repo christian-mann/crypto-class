@@ -1,0 +1,118 @@
+Properties
+	- Confidentiality
+	- Speed
+	- Disk space efficiency
+
+"Confidentiality".. against what?
+Definition of adversary:
+	- Can read raw disk at any time
+	- Can supply plaintext to be stored to disk
+	- Can modify unused sectors on disk and request decryption
+
+A method provides good confidentiality if the only information such an adversary
+can determine over time is whether the data in a sector has or has not changed
+since the last time they looked.
+
+We must process each sector differently, so that an attacker can't just copy one
+file into an unused sector and decrypt it.
+
+Because of the third property, we cannot use stream ciphers. Stream ciphers
+require different initial states, so we would need to encrypt each initial state
+per sector, so that's unhelpful because that would be a yuge waste of space.
+
+So we use block ciphers. But as you know, block ciphers only can process a
+certain amount at once, so the real question relies around modes of operation.
+ECB is right out, since each sector must be treated differently and ECB is
+untweakable. CTR, OFB, etc., that make a stream cipher out of a block cipher,
+are also untenable.
+
+Integrity is /not/ provided by any of these schemes. Why?
+	An attacker can always circumvent any integrity checks, by reverting the
+	disk back to a prior state. If you need integrity, do it on the filesystem
+	level with MACs or signatures, etc.
+
+CBC
+	Ci = E_K(C_{i-1} + P_K)
+
+	This is applied per-sector, with a different IV in each sector
+
+	If IV is predictable per sector, an attacker can do a 'watermarking attack',
+	a chosen plaintext attack:
+
+	Construct a file that spans multiple sectors, with contents such the first
+	block of ciphertext in each sector is identical:
+		C_1 = C_2
+		E_K(IV_1 + C_1) = E_K(IV_2 + C_2)
+		IV_1 + C_1 = IV_2 + C_2
+		C_1 + C_2 = IV_1 + IV_2
+	
+	If the attacker can determine IV_1 + IV_2, then he can construct a file with
+	this property, and can thus detect whether it is being stored on disk.
+	
+	Particularly, he could do this for any number of sectors, in any order, to
+	disambiguate different files.
+
+	ESSIV
+		Generating IVs from current time or whatever is /bad/ ok
+		But we need a new IV for each sector and ideally we don't want to store
+		it, because space
+		We can use the sector number. Obviously not by itself, but we can use
+		it.
+		IV(n) = E_s(IV), where s = hash(K)
+		Encrypted Salt-Sector Initialization Vector
+
+	Malleability
+		Reminder: This still does not do integrity checking. You remember from
+		the lab on CBC that CBC is very malleable under chosen-ciphertext.
+
+LRW (Liskov, Rivest, Wagoner)
+	C = E_K(P + X) + X
+	X = F * I
+
+	where K, F are keys; I is block index; operations are in GF(2^128)
+
+	Note: Multiplication can be somewhat expensive in a finite field.
+	X = F * I
+	  = F * (I_0 + V)
+	  = F * I_0 + F * V
+
+	So to decrypt N sectors of M blocks each, you only need N + M
+	multiplications. <-- not really useful tbh
+
+XEX (XOR Encrypt XOR) -- Similar to LRW:
+	X = E_K(I) * a^j
+	C = E_K(P + X) + X
+
+	This is good for sequential access to disks -- a^(j+1) is pretty easy to
+	compute, if you've already computed a^j
+
+Ciphertext Stealing
+	If you want to encrypt a message M whose length is not a multiple of the
+	block length, what do you do? You could pad it to length, or....
+
+	CTS_ECB_Encryption.png
+
+XTS (XEX-based Tweaked-codebook mode with ciphertext Stealing)
+	
+	XTS_encryption.svg.png
+
+	This is just a formalization of XEX
+
+	Technically uses two keys -- we're pretty sure it's because someone
+	misunderstood the XEX paper, whoops
+
+	This is the default in VeraCrypt, was the default in TrueCrypt, and is
+	supported (or default) by almost every encryption software.
+
+	Note: FileVault used to use CBC; BitLocker still does.
+
+	Roughly a 20-30% performance hit with modern CPUs
+
+VERY IMPORTANT: XEX, LRW, XTS do not provide any amount of integrity checking!
+Attacker (if possible) might replace 16-byte blocks at will, potentially with
+previous blocks of valid files! Since each block is treated individually, with
+no chaining, this attack will work.
+
+Many people are claiming that hard drive encryption should be the last line of
+defense -- that if you need to encrypt your files, you should do that using some
+authenticated algorithm (AEAD)

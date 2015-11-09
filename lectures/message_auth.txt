@@ -1,0 +1,44 @@
+Message Authentication Code
+
+Provides integrity and authentication
+	Detects accidental / intentional changes
+	Affirms the message's origin
+In this case, provides /no/ secrecy.
+
+"keyed cryptographic hash function"
+
+Takes a secret and a message, and produces a MAC (aka tag)
+
+Show picture
+
+Similar to digital signatures, but signer and verifier use same key
+
+Must be resistant to chosen-plaintext attacks:
+	I can use the oracle to generate as many MACs as I want, but
+	I must not be able to use those to construct another valid one without a
+	large amount of work.
+
+Replay attacks
+
+Simplest MAC algorithm:
+	hash(key || message)
+This is vulnerable to hash-length extension, as you'll find in your labs. Note
+that Keccak is not vulnerable to HL extension, so we don't need to worry about
+it.
+
+We could swap the message and the key:
+	hash(message || key)
+This has a problem -- if we can find m1, m2 colliding, we know that their MACs
+will be the same.
+
+Replay attacks
+
+HMAC:
+	hash( key || hash(key || message)) // sort of. It's close to this, but the
+	key is XORed by constants, to give two different keys.
+
+	The outer hash masks the result of the inner hash function, so it cannot be
+	extended.
+
+Realistically, if we need a MAC we use HMAC. There are others, but they really
+are not used that often.
