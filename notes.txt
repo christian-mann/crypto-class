@@ -48,6 +48,7 @@ Format:
 		Bitcoin
 		DeCSS
 		Differential Cryptanalysis
+		Email Encryption (PGP)
 		ENIGMA
 		Homomorphic
 		Malleable
@@ -55,7 +56,6 @@ Format:
 		POODLE
 		Perfect Forward Security
 		Quantum Cryptography
-		Random Number Generators
 		Secret Sharing
 		Secure Multiparty Computation
 			http://www.scientificamerican.com/article/cryptographers-could-prevent-satellite-collisions/#_10978
