@@ -1,0 +1,193 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 9 Candidate:\\Bleichenbacher's Attack}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will attack a vulnerability with unpadded / unarmored RSA.
+This should feel somewhat similar to a lab you performed earlier in the semester,
+when you persuaded a server to encrypt the same message under three different
+moduli, and by doing so were able to recover the plaintext. The attack is
+described in a very important paper from Bleichenbacher in 1998.
+
+The idea behind this attack is an oracle that decrypts a ciphertext and checks
+the format of the plaintext against a particular format. With this idea, you can
+create an adaptive chosen-ciphertext attack.
+
+Look up the paper ``Chosen ciphertext attacks against protocols based on the RSA
+encryption standard.'' You should obtain a paper by Bleichenbacher from CRYPTO
+'98; you can probably find a .ps or .pdf version.
+
+Read the paper. It describes a padding oracle attack on PKCS\#1v1.5. The attack
+is similar in spirit to the CBC padding oracle you built earlier; it's an
+``adaptive chosen ciphertext attack,'' which means you start with a valid
+ciphertext and repeatedly corrupt it, bouncing the adulterated ciphertexts off
+the target to learn things about the original.
+
+This is a common flaw even in modern cryptosystems that use RSA.
+
+It's also the most fun you can have building a crypto attack. It involves 9th
+grade math, but also has you implementing an algorithm that is complex on par
+with finding a minimum cost spanning tree.
+
+\section{Assignment}
+
+You will be implementing the majority of the functionality for this lab -- both
+server and client. I will give you the base structure that I want you to follow,
+but I will ask you to implement the majority. You are of course welcome and
+encouraged to use the library that I've given you, as well as code that you
+wrote.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 46 of the Matasano Crypto
+Challenges.
+\fi
+
+Setup: \begin{itemize}
+	\item Build an oracle function, just like you did in the padding oracle attack, but
+		have it check for plaintext[0] == 0 and plaintext[1] == 2.
+	\item Generate a 256 bit keypair; p and q each should be 128 bit primes.
+	\item Plug d and n into your oracle function.
+	\item PKCS1.5-pad a short message, like ``rsa padding'', and call it ``m''.
+		Encrypt it to get ``c''.
+	\item Decrypt ``c'' using your padding oracle.
+\end{itemize}
+
+For this lab, you are using an unrealistically small RSA modulus. You are only
+targeting one specific step in the Bleichenbacher paper -- Step 2c, which
+implements a fast, nearly O(log n) search for the plaintext.
+
+As you read the paper, keep in mind:
+\begin{itemize}
+	\item RSA ciphertexts are just numbers.
+	\item RSA is ``homomorphic'' with respect to multiplication, which means you
+		can multiply c * RSA(2) to get a $c'$ that will decrypt to plaintext *
+		2. Try multiplying ciphertexts with the RSA encryption of numbers so you
+		know you understand it.
+	\item What you need to grok for this challenge is that Bleichenbacher uses
+		multiplication of ciphertexts the way the CBC oracle uses XORs of random
+		blocks.
+	\item A PKCS\#1v1.5 conformant plaintext, one that starts with 00:02, must
+		be a number between 02:00:00...00 and 02:FF:FF...FF -- in other words,
+		$2B$ and $3B-1$, where $B$ is the bit size of the modulus minus the
+		first 16 bits. When you see $2B$ and $3B$, that's the idea the paper is
+		working with.
+\end{itemize}
+
+To decrypt ``c'', you'll need Step 2a from the paper (the search for the first
+``s'' that, when encrypted and multiplied with the ciphertext, produces a
+conformant plaintext), Step 2c, the fast O(log n) search, and Step 3.
+
+Your Step 3 code is probably not going to need to handle multiple ranges.
+
+We recommend you just use the raw math from paper (check, check, double check
+your translation to code) and not spend too much time trying to grok how the
+math works.
+
+\section{Rules}
+
+Because this lab is fairly involved, I will not require you to create a remote
+oracle, unless you want to. However, there should be an obvious separation
+between ``server'' code and ``client'' code.
+
+\section{Grading}
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all code, including a complete server, example client, and working solution.
+
+\end{document}

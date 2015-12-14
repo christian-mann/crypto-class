@@ -1,0 +1,50 @@
+RSA Parity
+	Challenge 46
+	Oracle = lambda ciph: rsa_decrypt(ciph) % 2 == 0
+
+CRIME
+	Similar to padding oracle
+	Oracle = lambda plain: len(cbc_encrypt(compress(prefix || plain || suffix)))
+
+SRP
+	Challenges 36 and 37 -- very straightforward
+
+Repeated Key
+	CTR mode, fixed-nonce substitutions
+	Manual is fine
+
+Meet-In-The-Middle
+	Toy encryption -- 3 byte blocks, double encryption
+
+Elliptic Curve
+	Implement elliptic curve?
+	Here's a point, compute nP?
+
+Bleichenbacher Attack
+	Challenge 47 (easier) and 48 (harder)
+
+DSA
+	Implement DSA
+	DSA nonce recovery from repeated nonce
+
+RC4 Bias
+	Oracle = lambda: rc4_encrypt(flag, random(key)) ?
+	This one is pretty open; I'm not sure what's feasible
+	Challenge 56 is this; unsure if it's viable in this short time
+	shit's hard
+
+Coppersmith Related RSA
+	"RSA Mistakes" master challenge from Pico2014
+	Hidden oracle = lambda uid, pubkey: rsa_encrypt(uid * message + message^2, pubkey)
+	Get traffic with same message, same pubkey, different uid
+	Recover message
+	Have fun with Groebner bases >:D
+
+Card Game Recovery
+	Make card game (poker, blackjack, pick one with incomplete information) 
+	Use a terrible RNG (MT19937 is a good choice)
+	Recover state of RNG from limited info. Assume you have the code; i.e. you
+	know how many numbers are generated between yours
+
+MD collisions
+	Challenge 53 "Expandable Messages"

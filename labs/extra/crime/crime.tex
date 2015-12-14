@@ -1,0 +1,188 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 8 Candidate:\\CRIME Attack on HTTPS}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will re-create the CRIME (``Compression Ratio Information-leak
+Made Easy'') attack, which exploited a vulnerability in the interaction between
+encryption and compression under certain circumstances. This attack was very
+powerful vs HTTPS sessions until very recently.
+
+Essentially, if you are an attacker with:
+\begin{enumerate}
+	\item Partial plaintext knowledge,
+	\item Partial plaintext control,
+	\item Access to a compression oracle,
+\end{enumerate}
+
+You've got a pretty good chance to recover any additional unknown plaintext.
+
+What's a compression oracle? You give it some input and it tells you how well
+the full message compresses, i.e. the length of the resultant output.
+
+This is somewhat similar to a timing attack; we take advantage of an incidental
+side channel rather than attacking the crypto mechanisms themselves.
+
+Scenario: You are listening on a network with an eye towards stealing session
+cookies. You've injected content allowing you to spawn arbitrary requests, which
+you can observe in flight.
+
+\section{Assignment}
+
+You will be implementing the majority of the functionality for this lab -- both
+server and client. I will give you the base structure that I want you to follow,
+but I will ask you to implement the majority. You are of course welcome and
+encouraged to use the library that I've given you, as well as code that you
+wrote.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 46 of the Matasano Crypto
+Challenges.
+\fi
+
+Come up with a clever flag. The flag should probably be text-based and
+(crucially) not terribly repetitive. Encode the flag as base64.
+
+Write an oracle: \texttt{oracle(P) =
+length(encrypt(compress(format\_request(P))))}.
+
+Format the request like this:
+\begin{verbatim}
+POST / HTTP/1.1
+Host: gmail.com
+Cookie: sessionid=TmV2ZXIgcmV2ZWFsIHRoZSBXdS1UYW5nIFNlY3JldCE=
+Content-Length: {len(P)}
+{P}
+\end{verbatim}
+
+Replace the session ID with your flag.
+
+Compress using zlib.
+
+Encryption is pretty much irrelevant, but do it anyway. Just use some stream
+cipher, so that length is preserved. Doesn't matter which. Random key/IV on each
+call, whatever.
+
+The idea here is to leak information via the compression algorithm. A payload of
+"sessionid=T" should compress a little bit better than "sessionid=S".
+
+There is one issue -- the DEFLATE algorithm operates on bits, but the length
+will be in bytes. Even if a better compression is found, it might not cross a
+byte boundary. So that's a problem.
+
+Also you might get some false positives. But! You should be able to work around
+these issues. Experiment with different strategies, such as passing two copies of the
+plaintext, truncating plaintext to various amounts, etc. At each step there
+should be one obvious choice for next byte.
+
+Recover the session ID from the compression oracle.
+
+\textbf{Extra:} Swap your stream cipher for CBC and do it again.
+
+\section{Rules}
+
+Your code should resemble the attacks that I have given you before.
+Particularly, you are required to use Pyro4 for remote object calls.
+
+\section{Grading}
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all code, including a complete server, example client, and working solution.
+
+\end{document}

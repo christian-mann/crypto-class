@@ -1,0 +1,255 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 9 Candidate:\\Digital Signature Algorithm}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+This lab contains two relatively straightforward attacks on the Digital
+Signature Algorithm.
+
+You will also implement DSA yourself, including signing and verification, but
+not including parameter generation.
+
+The first section demonstrates that DSA private keys(!) can be recovered from a
+signed message and a nonce.
+
+The second section demonstrates that DSA nonces can be recovered from a pair of
+messages signed with the same nonce.
+
+
+\section{Assignment}
+
+You will be implementing the majority of the functionality for this lab -- both
+server and client. I will give you the base structure that I want you to follow,
+but I will ask you to implement the majority. You are of course welcome and
+encouraged to use the library that I've given you, as well as code that you
+wrote.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenges 43-45 of the Matasano Crypto
+Challenges.
+\fi
+
+\subsection{Part 0: Implement DSA}
+
+This is pretty straightforward. There is a set of equations online that you need
+to follow. You do not need to implement parameter generation; you can use these:
+\begin{verbatim}
+p = 800000000000000089e1855218a0e7dac38136ffafa72eda7
+    859f2171e25e65eac698c1702578b07dc2a1076da241c76c6
+    2d374d8389ea5aeffd3226a0530cc565f3bf6b50929139ebe
+    ac04f48c3c84afb796d61e5a4f9a8fda812ab59494232c7d2
+    b4deb50aa18ee9e132bfa85ac4374d7f9091abc3d015efc87
+    1a584471bb1
+
+q = f4f47f05794b256174bba6e9b396a7707e563c5b
+
+g = 5958c9d3898b224b12672c0b98e06c60df923cb8bc999d119
+    458fef538b8fa4046c8db53039db620c094c9fa077ef389b5
+    322a559946a71903f990f1f7e0e025e2d7f7cf494aff1a047
+    0f5b64c36b625a097f1651fe775323556fe00b3608c887892
+    878480e99041be601a62166ca6894bdd41a7054ec89f756ba
+    9fc95302291
+\end{verbatim}
+
+\subsection{Part 1: Key Recovery From Nonce}
+
+The DSA signing operation generates a random subkey $k$. You know this because
+you implemented the DSA sign operation.
+
+Given a known key $k$, it's trivial to recover the DSA private key $x$:
+\[ x = \frac{s*k - H(\mathrm{msg})}{r} \mathrm mod q \]
+
+Do this a couple times to prove to yourself that you grok it. Capture it in a
+function of some sort.
+
+Use your parameters. Generate a keypair; publish your public key.
+
+Sign a message. I'm not sure what NIST wants you to do with the hash to convert
+it to an integer, but just stick ``0x'' in front of it and parse it as hex.
+
+However, when you sign the message, use a broken implementation of DSA that
+chooses $k$ values between $0$ and $2^{16}$. Recover the public key.
+
+\subsection{Part 2: DSA Nonce Recovery from Repeated Nonce}
+
+I will supply a collection of DSA-signed messages\footnote{see appendix}. They
+were signed under the following public key:
+\begin{verbatim}
+y = 2d026f4bf30195ede3a088da85e398ef869611d0f68f07
+    13d51c9c1a3a26c95105d915e2d8cdf26d056b86b8a7b8
+    5519b1c23cc3ecdc6062650462e3063bd179c2a6581519
+    f674a61f1d89a1fff27171ebc1b93d4dc57bceb7ae2430
+    f98a6a4d83d8279ee65d71c1203d2c96d65ebbf7cce9d3
+    2971c3de5084cce04a2e147821
+\end{verbatim}
+
+It should not be hard to find the messages for which I have accidentally used a
+repeated $k$ value (hint: what variable in the signature directly depends on
+$k$?). Given a pair of such messages, you can discover the $k$ used with the
+following formula:
+
+\[ k = \frac{m_1 - m_2}{s_1 - s_2} \mathrm{mod} q \]
+
+You should work out this formula from the original DSA equations to demystify
+it. Remember that group arithmetic wants to mess with you. Everything is mod
+$q$, which means that \textit{every} value should be s.t. $0 \leq x < q$; not
+negative, not greater than $q$. Also remember that division is multiplication by
+modular inverse.
+
+What's my private key?
+
+Note: This attack (in an elliptic curve group) broke the PS3.
+
+\section{Grading}
+
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all code, including a complete solution to each of the three problems above, and
+my private key from part 2.
+
+\appendix
+\section{Encrypted Messages for Part 2}
+\begin{verbatim}
+msg: Listen for me, you better listen for me now. 
+s: 1267396447369736888040262262183731677867615804316
+r: 1105520928110492191417703162650245113664610474875
+m: a4db3de27e2db3e5ef085ced2bced91b82e0df19
+msg: Listen for me, you better listen for me now. 
+s: 29097472083055673620219739525237952924429516683
+r: 51241962016175933742870323080382366896234169532
+m: a4db3de27e2db3e5ef085ced2bced91b82e0df19
+msg: When me rockin' the microphone me rock on steady, 
+s: 277954141006005142760672187124679727147013405915
+r: 228998983350752111397582948403934722619745721541
+m: 21194f72fe39a80c9c20689b8cf6ce9b0e7e52d4
+msg: Yes a Daddy me Snow me are de article dan. 
+s: 1013310051748123261520038320957902085950122277350
+r: 1099349585689717635654222811555852075108857446485
+m: 1d7aaaa05d2dee2f7dabdc6fa70b6ddab9c051c5
+msg: But in a in an' a out de dance em 
+s: 203941148183364719753516612269608665183595279549
+r: 425320991325990345751346113277224109611205133736
+m: 6bc188db6e9e6c7d796f7fdd7fa411776d7a9ff
+msg: Aye say where you come from a, 
+s: 502033987625712840101435170279955665681605114553
+r: 486260321619055468276539425880393574698069264007
+m: 5ff4d4e8be2f8aae8a5bfaabf7408bd7628f43c9
+msg: People em say ya come from Jamaica, 
+s: 1133410958677785175751131958546453870649059955513
+r: 537050122560927032962561247064393639163940220795
+m: 7d9abd18bbecdaa93650ecc4da1b9fcae911412
+msg: But me born an' raised in the ghetto that I want yas to know, 
+s: 559339368782867010304266546527989050544914568162
+r: 826843595826780327326695197394862356805575316699
+m: 88b9e184393408b133efef59fcef85576d69e249
+msg: Pure black people mon is all I mon know. 
+s: 1021643638653719618255840562522049391608552714967
+r: 1105520928110492191417703162650245113664610474875
+m: d22804c4899b522b23eda34d2137cd8cc22b9ce8
+msg: Yeah me shoes a an tear up an' now me toes is a show a 
+s: 506591325247687166499867321330657300306462367256
+r: 51241962016175933742870323080382366896234169532
+m: bc7ec371d951977cba10381da08fe934dea80314
+msg: Where me a born in are de one Toronto, so 
+s: 458429062067186207052865988429747640462282138703
+r: 228998983350752111397582948403934722619745721541
+m: d6340bfcda59b6b75b59ca634813d572de800e8f
+\end{verbatim}
+
+\end{document}

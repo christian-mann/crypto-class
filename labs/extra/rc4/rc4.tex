@@ -1,0 +1,162 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 9 Candidate:\\RC4 Biases}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+This is a slightly more freeform lab than the other extra labs. In this lab, you
+will experiment with RC4 keystream biases. In theory, you will implement a
+ciphertext-only plaintext recovery attack, although it is possible it will be
+too slow to reliably run.
+
+RC4 is a stream cipher historically used in many places, such as WEP, HTTPS,
+SSL, among others. One of its strengths is its speed. However, since its
+creation, various biases have been identified in its keystream. These biases can
+lead to partial or complete plaintext recovery, given enough encrypted text.
+
+You will verify these biases exist, and implement a simple attack.
+
+\section{Assignment}
+
+You will implement the entirety of this lab -- both server and client. Due to
+the resources required for the lab, I do not need you to actually use Pyro4 for
+this lab. You are of course welcome and encouraged to use the library that I've
+given you, as well as code that you wrote throughout the year.
+
+\ifinstructornotes
+\textbf{Instructor Note:} I made this challenge up all by myself!
+\fi
+
+You will find this paper useful: ``On the Security of RC4 in TLS and WPA'' by
+AlFardan et al. It covers in detail the idea of keystream biases, example
+attack scenarios, and their application to attacking real cryptosystems.
+
+\subsection{Part 1: Observing Biases}
+
+Once you have RC4 working, try to replicate the results you see in the paper.
+Generate an RC4 key, and encrypt a keystream of 256 zero bytes (0x00). Repeat this
+many, many times (probably at least 1 million), keeping track of the frequency
+distributions for each byte of output. Make sure you can replicate the results
+seen in the paper, at least somewhat.
+
+Determine which bytes are biased the strongest, either towards or away from a
+particular output.
+
+Honestly, I have not done this myself, so I'm not sure that there is a strong
+enough bias to show up in experiments like this. \textit{If you don't see a bias
+after this}, modify the experiment. Insert a deliberate bias in your RC4
+algorithm: Set the keystream byte to 0x00 randomly, based on the original key
+and the original keystream byte.
+
+\subsection{Part 2: Decrypting Ciphertext}
+
+Generate a plaintext of 256 bytes. Encrypt it many times under random keys.
+Determine the frequency distribution of each output byte whose corresponding
+keystream had a strong bias. From this, you should be able to determine a
+probability distribution of the original bytes.
+
+Compare this probability distribution to the original plaintext.
+
+\section{Grading}
+
+Labs are due Thursday, November 12 at 11:59pm. You will need
+to turn in all code. In addition, you will need to turn in a short report on
+what you did, what you had to modify, and any supporting charts.
+
+\end{document}

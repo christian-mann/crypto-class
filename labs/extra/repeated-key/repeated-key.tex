@@ -1,0 +1,163 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 8 Candidate:\\Stream Cipher Repeated Key}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will attack a misconfigured stream cipher. In particular, you
+will attack CTR mode encryption, but with a key/nonce combination that is fixed
+across multiple encryptions.
+
+\section{Assignment}
+
+\subsection{Part 1: Implementing CTR}
+
+You will be implementing the majority of the functionality for this lab -- both
+server and client. I will give you the base structure that I want you to follow,
+but I will ask you to implement the majority. You are of course welcome and
+encouraged to use the library that I've given you, as well as code that you
+wrote.
+
+If you don't already have CTR mode encryption code lying around, you will need
+to find or create an implementation for it. Note: You will probably want to get
+a pure implementation; do not use builtin libraries like OpenSSL.
+
+\subsection{Part 2: Oracle}
+
+Take your CTR encrypt/decrypt function and fix its nonce value. (to 0, if you'd
+like. Note: do not fix the \textit{counter}, just the nonce.) Generate a random
+AES key.
+
+Obtain or create a list of around 40 humorous quips, texts, sayings, lines of
+poetry, et cetera.  Each one should be around the same length, but not exactly.
+
+Create an oracle that chooses a random plaintext and encrypts it with CTR mode
+under your static key and static nonce. Alternatively, encrypt each one and hold
+on to the ciphertexts.
+
+\subsection{Part 3: Decryption}
+
+Because the nonce was not randomized, each ciphertext has been encrypted against
+the same encryption. This is Very Bad.
+
+Remember that, like most stream ciphers (including RC4, and any block cipher in
+CTR mode), the actual ``encryption'' of a byte of data boils down to a single
+XOR operation.
+
+Create a solution that solves this problem in the same way you solved
+repeating-key XOR, in the first project. While it should be impossible to solve
+for the AES key, you can solve for the keystream directly. Remember that some
+ciphertexts are longer than others; you may need to be careful with truncation.
+As in the first project, your solution will likely not arrive at a perfect
+decryption, but it should get close.
+
+\section{Rules}
+
+Your code should resemble the labs that I have given you before. Particularly,
+you are required to use Pyro4 for remote object calls. You may distribute the
+flags already-encrypted, or make it a constant method on a remote object, as in
+previous labs.
+
+For this lab, I will require a fully automated solution, unlike Lab 1.
+
+\section{Grading}
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all code, including a complete server, example client, and working solution.
+
+\end{document}

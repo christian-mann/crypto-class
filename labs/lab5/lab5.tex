@@ -1,0 +1,213 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 5 Assignment:\\Hash-Length Extension}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will implement and then break an insecure Message
+Authentication Code scheme. Particularly, the MAC under discussion is
+secret-prefix SHA-1, which is trivially breakable by a length extension
+attack\footnote{As are MD4, MD5, SHA-2, and anything else that uses the
+Merkle-Damgard construction}.
+
+There is (shockingly) only one section to this lab, but it will require you to
+write a fairly large amount of code on your own. While you can (and may) obtain an
+implementation of SHA-1 online, you will need to modify it somewhat to allow
+injection of an arbitrary starting point.
+
+There is no web service associated with this lab. While I could set one up, I
+feel the lab speaks for itself, and there is no natural way to hide a key to be
+decrypted later, in this case.
+
+\section{Assignment}
+
+\textit{Just kidding, there totally are two parts. But they're pretty closely
+related; I almost put them in one part.}
+
+\subsection{Part 1: Implement SHA-1 secret-prefix MAC}
+
+Find a SHA-1 implementation in your favorite language. Note: you will need to
+obtain an implementation \textit{in} the language itself, not one in a library.
+You will be modifying it later, so make sure you understand what it is doing.
+Alternatively, look up the algorithm and implement it yourself. Make sure to
+test it on example vectors.
+
+It will probably prove useful to you to separate out the padding and
+preprocessing from the actual compression into different functions.
+
+Write a function to authenticate a message under a secret key by using a
+secret-prefix MAC, which is simply:
+\begin{lstlisting}[language={}]
+	SHA1(key || message)
+\end{lstlisting}
+
+It may be useful to create a function to verify a given MAC is valid under a
+secret key.
+
+Verify that the MAC works; that you cannot modify the message without
+invalidating the MAC you've produced, and that you cannot produce a new MAC
+without knowing the secret key.
+
+\subsection{Part 2: Break SHA-1 secret-prefix MAC}
+
+Secret-prefix SHA-1 MACs are trivially breakable.
+
+The length extension attack on secret-prefix SHA1 relies on the fact that you
+can take the output of SHA-1 and use it as a new starting point for SHA-1, thus
+taking an arbitrary SHA-1 hash and ``feeding it more data''.
+
+Since the key is prepended to the data in secret-prefix, any additional data you
+feed the SHA-1 hash in this fashion will appear to have been hashed with the
+secret key.
+
+To carry out the attack, you'll need to account for the fact that SHA-1 is
+``padded'' with the bit-length of the message; your forged message will need to
+include that padding. We call this ``glue padding''. The final message you actually forge will be:
+\begin{lstlisting}[language={}]
+	SHA1(key || original-message || glue-padding || new-message)
+\end{lstlisting}
+
+Note that to generate the glue padding, you'll need to know the original bit
+length of the message; the message itself is known to the attacker, but the
+secret key isn't, so you'll need to guess at it.
+
+You should first write a function that computes the MD padding of a message
+passed into it. Verify that it matches the padding generated by your SHA-1
+function.
+
+Now, take the SHA-1 secret-prefix MAC of the message you want to forge -- this
+is just a SHA-1 hash -- and break it into 32-bit SHA-1 registers.
+
+Modify your hash implementation to allow callers to pass in arbitrary starting
+points for ``a'', ``b'', etc. They normally start at magic numbers. With these
+registers fixed, hash the additional data you want to forge.
+
+Using this attack, generate a secret-prefix MAC under a secret key (choose a
+random word or two from /usr/share/dict/words) of the string:
+\begin{lstlisting}
+	account=sujeet-shenoi&forward[]=sujeet@utulsa.edu
+\end{lstlisting}
+Perhaps this is a system that allows users to submit forwarding addresses, in
+the clear but authenticated with their passwords (or some other shared secret),
+and you have the ability to capture and replay requests\footnote{Remember:
+\textit{na\"ive Javascript programmer}.}.
+
+Forge a variant of this message that ends with "\&forward[]=<your email
+address>".
+
+\ifinstructornotes
+\textbf{Instructor Note:} This comes from challenges 28 and 29 of the Matasano
+crypto challenges.
+\fi
+
+\section{Rules}
+
+Please do not exploit any non-cryptographic vulnerabilities you may discover on
+any machines\footnote{I dunno, maybe you're poking around in your spare time.
+You won't find anything useful on any server for this lab.}. You should not need
+to attempt to gain any level of access to the machine beyond a TCP connection,
+nor should you attempt to mount a Denial of Service attack on any host on the
+network.
+
+\section{Grading}
+Labs are due Thursday, October 28 at 11:59pm. You will need to turn in
+\textbf{all relevant code}, and \textbf{an explanation of how you would modify
+the system to prevent this attack}.
+
+\end{document}

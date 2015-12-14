@@ -1,0 +1,195 @@
+\newif\ifinstructornotes
+\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 7 Assignment:\\Random Number Generators}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will directly attack a random number generator. While the
+particulars of this lab will only deal with one random number generator, the
+techniques and concepts should be applicable to a wide range of RNGs.
+
+The Mersenne Twister is a random number generator that is designed to have a
+very long period, be relatively fast to compute, and have a high degree of
+randomness. However, it is not suitable for cryptographic applications, as it
+can be very predictable, given enough information.
+
+In the first section of this lab, you will recover the seed that was used for
+the generator, given a rough idea of what the seed value might be, and a handful
+of outputs.
+
+In the second section, you will recover the internal state of the generator,
+given a sequence of consecutive outputs.
+
+\section{Assignment}
+
+Just as in every other lab, you will be given a library that contains various
+utility functions, as well as an implementation of 32-bit MT19937. I would
+encourage you to use this by itself while writing your scripts; the extra
+infrastructure surrounding it can be cumbersome.
+
+\subsection{Part 1: Seed Recovery}
+
+The oracle for this lab does the following:
+\begin{itemize}
+	\item Waits a random number of seconds between 40 and 1000.
+	\item Seeds the RNG with the current UNIX timestamp, as seen by the server.
+	\item Waits a random number of seconds between 40 and 500 (again).
+	\item Returns a proxy to that RNG. This will allow you to generate as many
+		numbers as you wish, but you should not need more than a handful.
+\end{itemize}
+
+If you can correctly predict the seed that was used, you will earn a flag.
+Again, example code will be given.
+
+If you do the math, you will notice that some of these wait times are very long.
+You may wish to practice with a shorter timeout, or by cheating locally. The
+server time should be very close to the correct time\footnote{The server uses
+timestamps in UTC.}.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 23 of the Matasano crypto
+challenges.
+\fi
+
+\subsection{Part 2: State Reconstruction}
+
+The internal state of MT19937 consists of 624 32-bit integers.
+
+For each batch of 624 outputs, MT permutes that internal state. By permuting
+that state regularly, MT19937 achieves a period of $2^{19937}$, which is Big.
+
+Each time MT19937 is tapped, an element of its internal state is subject to a
+\textit{temper}ing function that diffuses bits through the result. The tempering
+function is invertible; you can write an \textit{untemper} function that takes
+an MT19937 output and transforms it back into the corresponding element of the
+MT19937 state array.
+
+\ifinstructornotes
+\textbf{Instructor Note:} To invert the temper function, apply the inverse of
+each of the operations in the temper function in reverse order. There are two
+kinds of operations in the temper transform, each applied twice: one is an XOR
+against a right-shifted value, and the other is an XOR against a left-shifted
+value ANDed with a magic number. So you'll need code to invert the ``right'' and
+the ``left'' operation.
+\fi
+
+Once you have \textit{untemper} working, obtain an MT19937 generator from the
+oracle, tap it for 624 outputs, untemper each of them to recreate the state of
+the generator, and splice that into a new instance of the MT19937 generator.
+
+The new spliced generator should predict the values of the original. You will
+need to predict five consecutive values in order to earn a flag.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 23 of the Matasano crypto
+challenges.
+\fi
+
+\section{Rules}
+
+Standard rules apply. Please do not exploit any non-cryptographic
+vulnerabilities you may discover on any machines. You should not need to attempt
+to gain any level of access to the machine beyond a TCP connection, nor should
+you attempt to mount a Denial of Service attack on any host on the network.
+
+\section{Grading}
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all relevant code, and the recovered flags.
+
+\end{document}

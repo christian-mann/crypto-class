@@ -1,0 +1,189 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 9 Candidate:\\Merkle-Damgard Multicollisions}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+In this lab, you will create a simple, nontrivial hash function, and then
+generate a multitude of collisions for it.
+
+The major feature you want in a hash function is collision resistance. It should
+be hard to generate collisions, and it should be \textit{really} hard to collide
+with a given hash (aka preimage).
+
+Iterated hash functions have a problem: the effort to generate collisions scales
+sublinearly. What's an iterated hash function? I'm talking about the
+Merkle-Damgard construction, like this:
+\begin{verbatim}
+function MD(H, M, C):
+  for M[i] in pad(M):
+    H := C(M[i], H)
+  return H
+\end{verbatim}
+
+For message M, initial state H, and compression function C.
+
+This is the structure that SHA-1 and MD4 use. You can use this formula to build
+a two-bit hash function out of spare crypto primitives you have lying around,
+such as C = AES-128.
+
+The cost of collisions scales sublinearly. What does that mean? If it's feasible
+to find one collision, it's probably feasible to find a lot.
+
+\section{Assignment}
+
+I will give you the base structure that I want you to follow, but I will ask you
+to implement the majority. You are of course welcome and encouraged to use the
+library that I've given you, as well as code that you wrote.
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 52 of the Matasano Crypto
+Challenges.
+\fi
+
+To generate a lot of collisions: For a given state H, find two blocks that
+collide. Now take the resulting hash from this collision as your new H and
+repeat. Recognize that with each iteration you can actually double your
+collisions by subbing in either of the two blocks for that slot.
+
+Finding two collisions should takes $2^{b/2}$ work (where b is the bit-size of the
+hash function), by the birthday paradox. Then finding $2^n$ colliding messages
+only takes $n * 2^{b/2}$ work.
+
+\subsection{Part 1: Build-a-hash-function workshop}
+
+\begin{enumerate}
+	\item Take a fast block cipher and use it as C.
+	\item Make H pretty small -- 16 or 32 bits is plenty. Pick some initial H.
+	\item H is going to be the input key and output block from C. Because C
+		probably wants a full block, you'll need to pad it on the way in and
+		drop some bits on the way out.
+\end{enumerate}
+
+Now write the function $f(n)$ that will generate $2^n$ collisions of this hash
+function.
+
+\subsection{Part 2: Double Collisions}
+
+People have tried to strengthen hash functions by concatenating them, like this:
+\begin{enumerate}
+	\item Take hash functions $f$ and $g$.
+	\item Build $h$ such that $h(x) = f(x) \| g(x)$.
+\end{enumerate}
+
+The idea is that if collisions in $f$ cost $2^{b_1/2}$ and collisions in $g$
+cost $2^{b_2/2}$, then collisions in $h$ should be very expensive at
+$2^{(b_1+b_2)/2}$. But we can do better!
+
+\begin{enumerate}
+	\item Pick the cheaper hash function; suppose it's $f$.
+	\item Generate $2^{b_2/2}$ messages that collide in $f$.
+	\item There's a good chance that your message pool has a collision in $g$.
+	\item If it doesn't, keep generating collisions until you find it.
+\end{enumerate}
+
+Build a (slightly) more expensive hash function to pair with the one you just
+used. Find a pair of messages that collide under both functions. Measure the
+total number of collisions generated.
+
+\section{Grading}
+Labs are due Thursday, November 12 at 11:59pm. You will need to turn in
+all code.
+
+\end{document}

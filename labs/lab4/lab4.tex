@@ -1,0 +1,207 @@
+\newif\ifinstructornotes
+%\instructornotestrue % comment out to hide instructor notes
+
+\documentclass[11pt,oneside]{article}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings} % to display code
+\usepackage{parskip}
+\usepackage{url}
+\pagestyle{fancy}
+%\geometry{letterpaper,tmargin=.75in,bmargin=1.25in,lmargin=.75in,rmargin=.75in,headheight=13.6pt,headsep=0in,footskip=.3in}
+\geometry{letterpaper,tmargin=.5in,bmargin=.5in,lmargin=.5in,rmargin=.5in,headheight=13.6pt,headsep=0in,footskip=.3in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\parindent}{0in}
+%\setlength{\parskip}{0.0in}
+%\setlength{\itemsep}{0in}
+%\setlength{\topsep}{0in}
+%\setlength{\tabcolsep}{0in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\class}{Introduction to Cryptography}
+\newcommand{\project}{Lab 4 Assignment:\\RSA Broadcast Attack}
+
+\renewcommand{\headrulewidth}{0pt}
+%\fancyfoot{}
+%\cfoot{\quad \quad \quad \quad \quad \quad \thepage\ of \pageref{LastPage}}
+% quads to fix center...
+\cfoot{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Style
+\newcommand{\sectionfont}{phv} % Helvetica
+\newcommand{\bodyfont}{ppl} % Palatino
+
+\renewcommand{\section}[1] {
+    \vspace{12pt}{\quad\fontfamily{\sectionfont}\selectfont\Large\scshape\textbf{#1}}\\[-10pt]
+    \vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+\renewcommand{\subsection}[1] {
+    \vspace{12pt}{\fontfamily{\sectionfont}\selectfont\large\scshape\textbf{#1}}\\[-10pt]
+    %\vspace{8pt}\rule{\textwidth}{1pt}\\[-16pt]
+
+    % this space is needed
+}
+
+
+% \newcommand{\project}[2] {
+%                 \begin{tabular}{p{.25\linewidth}p{.05\linewidth}p{.7\linewidth}}
+%                         \textbf{#1} & & #2 \\\\
+%                 \end{tabular}
+% 
+%         % this space is needed
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+language=python,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%%umbersep=5pt,                  % how far the line-numbers are from the code
+%backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%%frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%%captionpos=b,                   % sets the caption-position to bottom
+%%breaklines=true,                % sets automatic line breaking
+%%breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+%%title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+%escapeinside={\%*}{*)}          % if you want to add a comment within your code
+%morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+
+\begin{document}
+
+\fontfamily{\bodyfont} \selectfont \small
+\thispagestyle{empty}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\huge\scshape\textbf{\class}
+\end{center}
+\begin{center}
+    \fontfamily{\sectionfont}\selectfont\large\scshape\textbf{\project}
+\end{center}
+
+\section{Overview}
+
+This short lab will demonstrate the fragility of unpadded RSA. You will recover
+a message that has been encrypted multiple times, under different keys, via
+H\aa{}stad's Broadcast attack.
+
+There are two sections of this lab. The second section is very similar to the
+first, and will be solved with almost the same code.
+
+The services are available as Pyro4\footnote{https://pythonhosted.org/Pyro4/}
+remote objects. This should work with both Python 2 and 3; let me know if
+technical issues get in the way and we can work something out.
+
+\section{Assignment}
+
+\subsection{Part 1: E = 3 RSA Broadcast}
+
+\textit{Explanatory text largely taken from Matasano crypto challenge 40.}
+
+Assume you're a Javascript programmer. That is, you're using a naive handrolled
+RSA to encrypt without padding.
+
+Assume you can be convinced or coerced into encrypting the same plaintext three
+times, under three different public keys, with E = 3. You can; it's happened.
+
+Then an attacker can trivially decrypt your message, by: \begin{enumerate}
+	\item Capturing any 3 of the ciphertexts and their corresponding pubkeys.
+	\item Using the Chinese Remainder Theorem to solve for the number
+		represented by the three ciphertexts (which are residues modulo their
+		respective pubkeys).
+	\item Taking the cube root of the resulting number.
+\end{enumerate}
+
+The Chinese Remainder Theorem says you can take any number and represent it as
+the combination of a series of residues mod a series of moduli. In the
+three-residue case, you have:
+\begin{lstlisting}[language={}]
+	result = 
+		(c_0 * m_s_0 * invmod(m_s_0, n_0)) + 
+		(c_1 * m_s_1 * invmod(m_s_1, n_1)) + 
+		(c_2 * m_s_2 * invmod(m_s_2, n_2)) mod N_012
+\end{lstlisting}
+
+where
+
+\begin{lstlisting}[language={}]
+	c_0, c_1, c_2 are the three respective residues mod n_0, n_1, n_2
+
+	m_s_n (for n in 0, 1, 2) are the product of the moduli EXCEPT n_n -- ie,
+	m_s_1 is n_0 * n_2
+
+	N_012 is the product of all the moduli
+\end{lstlisting}
+
+To decrypt RSA using a simple cube root, take the accumulated result and
+cube-root it.
+
+\begin{verbatim}
+Server URL: PYRO:RSABroadcast@10.10.200.42:9041
+\end{verbatim}
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is challenge 40 of the Matasano crypto
+challenges.
+\fi
+
+\subsection{Part 2: E $\neq$ 3 Broadcast Attack}
+
+Imagine you, the same naive Javascript programmer, have discovered that your
+handrolled RSA encryption can be defeated by collecting enough ciphertexts where
+E = 3. You have thus decided to disallow all keys with E = 3, and only
+generate keys where E $\geq$ 5.
+
+This is still vulnerable to the same attack. You will need to change some
+constants in your code, and \textit{should} abstract some logic into loops. A
+perfect solution will be able to attack the system regardless of which E values
+are disallowed.
+
+\begin{verbatim}
+Server URL: PYRO:RSABroadcastNo3@10.10.200.42:9041
+\end{verbatim}
+
+\ifinstructornotes
+\textbf{Instructor Note:} This is an original challenge! But it closely
+resembles challege 40.
+\fi
+
+\section{Mathematics}
+
+The ``Hast\aa{}d's Broadcast Attack'' section of the ``Coppersmith's Attack''
+Wikipedia page describes the attack from a mathematical perspective; I would
+recommend demonstrating the attack with a very small key, on your own.
+
+\section{Rules}
+
+Please do not exploit any non-cryptographic vulnerabilities you may discover on
+any machines. You should not need to attempt\footnote{I hate telling people they
+are not allowed to hack my services. If you want to try, please go ahead. If you
+find something, just tell me, and don't use it to cheat on the lab.} to gain any
+level of access to the machine beyond a TCP connection, nor should you attempt
+to mount a Denial of Service attack on any host on the network.
+
+\section{Grading}
+Labs are due Thursday, October 15 at 11:59pm. You will need to turn in all
+recovered flags and any supporting code.
+
+\end{document}
