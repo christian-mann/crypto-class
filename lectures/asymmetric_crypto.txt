@@ -86,3 +86,9 @@ So now we do an example
 	m = 9
 	C = m^e (mod n) = 9^7 (mod 143) = 48
 	M = m^d (mod n) = 48 ^ 103 (mod 143) = 9 = m
+
+Video on RSA
+https://www.youtube.com/watch?v=wXB-V_Keiu8
+
+Ordinarily I would (and do) recommend Numberphile, but their video on RSA seems
+to stop right before the useful part

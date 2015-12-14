@@ -1,0 +1,182 @@
+Random Number Generators
+
+	http://dilbert.com/strip/2001-10-25
+	
+	A "true" RNG can only come from true noise: quantum fluctuations, input
+	delays from keyboard and mouse, network or disk I/O, cosmic radiation, etc.
+
+	Maybe you take the lowest bit of that every so often and call it random.
+	Alternatively, maybe you run the whole thing through a hash function.
+
+	Random.org uses atmospheric noise (static)
+
+	Amount of randomness available (measured in bits): Entropy
+
+
+PRNG
+
+	Take seed -> produce sequence of numbers
+	Usually the internal state is wayyy bigger than the seed length
+
+	Eventually this sequence has to repeat; there are only so many bits of state
+
+	Often have the capability to "re-seed", which is different from restarting
+		-> takes into account the current state of the generator as well
+
+Requirements
+	Ill-defined. Should look "random"
+Periodicity
+	Needs to be high. Some RNGs have periods of ~2^32, which is too low in
+	practice.
+
+Linear Congruential Generator
+	X_{n+1} = a X_n + b (mod m)
+
+	Very straightforward
+
+	Resembles the one-time pad private key algorithm
+
+Middle-square
+	Developed in ~1240 by "Brother Edvin", reinvented in 1949 by Von Neumann
+	Take a n-digit starting value
+	Square it to get 8 digits
+	The middle 4 digits are your new value
+	Very likely to end with 0000
+	Not even close to secure
+
+Mersenne
+	MT19937 and MT19937-64 are /the/ PRNGs.
+	Period: 2^19937 - 1
+	State: 624 * 32-bit integers = 2.5kB
+	Passes tests for "randomness" such as Diehard
+
+	Tiny version: TinyMT uses 127 bits of state
+
+	Not secure -- can reconstruct state from 624 outputs
+Stream ciphers
+
+Randomness tests
+	
+	Repetition / non-repetition -- birthday paradox says you will end up
+	repeating output a certain amount of times
+
+	Diehard (1995) -- Developed by mathematician George Marsaglia, published in
+	1995 on a CD-ROM. Examples:
+		Choose random points on an interval. The spacing between them should
+		follow an exponential distribution.
+
+		Parking lot test: Randomly place unit circles in a 100x100 square. A
+		circle is "parked" if it does not overlap any other circles. After 12000
+		tries, the number of successfully parked circles should follow a certain
+		normal distribution.
+
+		Squeeze test: Multiply 2^31 by random floats (0,1) until you reach 1.
+		The number of floats needed to reach 1 should follow a certain
+		distribution.
+
+		Craps test: Play craps. Analyze wins and throws; they each should follow
+		a certain distribution
+
+	TestU01 (2007)
+		More of the same, really... allows parameterization
+
+CSPRNG
+
+	Everything needs one:
+		Key generation
+		Nonce (might not need to be random)
+		One-time-pad
+		Salts
+	
+	Idea: Pseudo Random Number Generator that looks like an actual RNG
+		-> up to non-polynomial amount of effort
+
+Properties
+	Next-bit test: Given the first k bits of output, an attacker should not be
+	able to predict bit k+1 in polynomial time with more than 50% probability
+
+	State-compromise extension: If any or all of the CSPRNG's hidden state has
+	been revealed, it should not be possible to rewind the generator to a
+	previous state.
+
+Examples:
+	Blum Blum Shub
+		
+		Quadratic Residuosity (finding square roots)
+		x_{n+1} = x_n^2 mod M
+		Emit LSBs of x
+
+		State reconstruction: Finding square roots is hard (remember?)
+
+		This is "provably secure" for the above reason, but ungodly slow and not
+		actually /that/ secure.
+
+		768-bit modulus, emit 10 bits per step, generate 1MB of data -> attacker
+		needs to do at least 2^(-264) steps; i.e. nothing
+	
+	Blum Micali
+		
+		Discrete Logarithm (have you noticed a pattern)
+
+		x_0 is a seed
+		x_{n+1} = g^{x_n} mod p
+		Output 1 if x_i < (p-1)/2, else output 0 (i.e. take the high bit)
+
+		Again, stupid inefficient (even moreso than BBS) and while "proven
+		secure," it's not proven just how high that modulus needs to be
+	
+	Dual Elliptic Curve Deterministic Random Bit Generator
+		
+		Dual_EC_DRBG
+
+		Developed by NSA starting in 1997
+
+		Based on computational hard problems in number theory... sort of.
+			"Discrete Logarithm Kleptography"
+
+		Includes two constants, P and Q (not primes; that's why they're capital
+		letters). Originally the idea was that anyone could choose these P and Q
+		according to some formula. But NIST specification dictates a particular
+		choice. These P,Q were not "nothing up my sleeve numbers" -- they were
+		opaque.
+
+		Various points in 2001-2005: algorithm is implemented by RSA and chosen
+		as default for BSAFE, a crypto library. Money changed hands.
+
+		2006: Paper is published that shows Dual_EC_DRBG is distinguishable from
+		random output
+
+		2006: Paper is published that states that Q needs to be chosen randomly
+		(not every time, just randomly) otherwise there might be a trap (back)
+		door.
+
+		2007: Bruce Shneier publishes "Did NSA Put a Secret Backdoor In New
+		Encryption Standard?"
+
+		September 2013: Snowden docs reveal that the answer is yes ^
+
+		September 2013: RSA recommends people stop using the algorithm
+
+
+		The security proof required: P and Q independently random, three
+		problems shown to be hard (only one of which was accepted as hard), and
+		fewer bits were output in the final truncation that actually were.
+	
+	CSPRNG Standards - FIPS 186-2
+
+		Hash_DRBG:
+			Initialize V to seed
+
+			To generate:
+			tmp = ""
+			while len(tmp) < n:
+				tmp = tmp || hash(V)
+				V = V + 1
+			return leftmost n bits of tmp
+
+			V = V + C + ctr + hash(0x03 || V), truncate to seedlen
+			Effectively V becomes some random other thing
+
+			This satisfies the two crucial properties, and: if the generator is
+			re-seeded after each output, then you can't easily predict forward
+			either.
